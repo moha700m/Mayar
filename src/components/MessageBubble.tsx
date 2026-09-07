@@ -1,115 +1,194 @@
-import { Feather } from '@expo/vector-icons';
-import * as Clipboard from 'expo-clipboard';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { BrandMark } from '@/src/components/BrandMark';
-import { colors, radii, spacing } from '@/src/theme/tokens';
+import { MessageActions } from '@/src/components/MessageActions';
+import { PlanCard } from '@/src/components/PlanCard';
+import { QuestionCard } from '@/src/components/QuestionCard';
+import { StreamingText } from '@/src/components/StreamingText';
+import { TypingIndicator } from '@/src/components/TypingIndicator';
+import { layout } from '@/src/theme/layout';
+import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 import type { ChatMessage } from '@/src/types';
 
 type MessageBubbleProps = {
   message: ChatMessage;
-  onCopied: () => void;
-  onVoice: () => void;
+  isLastAssistant?: boolean;
+  onCopy: () => void;
+  onShare: () => void;
+  onRetry?: () => void;
 };
 
-export function MessageBubble({ message, onCopied, onVoice }: MessageBubbleProps) {
+export function MessageBubble({ message, isLastAssistant, onCopy, onShare, onRetry }: MessageBubbleProps) {
   const isUser = message.role === 'user';
+  const isThinking = message.status === 'thinking';
+  const isError = message.status === 'error';
+  const hasContent = message.displayedText.trim().length > 0;
+  const showBlocks = message.status === 'complete' && message.blocks.length > 0;
 
-  async function copyMessage() {
-    await Clipboard.setStringAsync(message.text);
-    onCopied();
-  }
-
-  return (
-    <View style={[styles.row, isUser ? styles.userRow : styles.assistantRow]}>
-      {!isUser && <BrandMark small />}
-      <View style={[styles.content, isUser ? styles.userContent : styles.assistantContent]}>
-        <View style={[styles.bubble, isUser ? styles.userBubble : styles.assistantBubble]}>
-          <Text selectable style={[styles.text, isUser && styles.userText]}>
+  if (isUser) {
+    return (
+      <View style={styles.userRow}>
+        <View style={styles.userBubble}>
+          <Text selectable style={styles.userText}>
             {message.text}
           </Text>
         </View>
-        {!isUser && (
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityLabel="نسخ الرد"
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={copyMessage}
-              style={styles.action}
-            >
-              <Feather color={colors.textDim} name="copy" size={14} />
-            </Pressable>
-            <Pressable
-              accessibilityLabel="تشغيل الرد صوتيًا"
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={onVoice}
-              style={styles.action}
-            >
-              <Feather color={colors.textDim} name="volume-2" size={14} />
-            </Pressable>
-          </View>
-        )}
       </View>
+    );
+  }
+
+  return (
+    <View style={styles.assistantRow}>
+      {isThinking ? (
+        <TypingIndicator />
+      ) : (
+        <View style={styles.assistantBody}>
+          {isError || !hasContent ? (
+            <Text style={styles.emptyText}>ما قدرت أكمل الرد. أعد المحاولة.</Text>
+          ) : (
+            <StreamingText text={message.displayedText} />
+          )}
+
+          {showBlocks &&
+            message.blocks.map((block, index) => {
+              if (block.type === 'text') {
+                return (
+                  <Text key={`text-${index}`} style={styles.blockText}>
+                    {block.content}
+                  </Text>
+                );
+              }
+              if (block.type === 'context') {
+                return (
+                  <View key={`ctx-${index}`} style={styles.context}>
+                    <Text style={styles.contextLabel}>{block.label}</Text>
+                    <Text style={styles.contextValue}>{block.value}</Text>
+                  </View>
+                );
+              }
+              if (block.type === 'steps') {
+                return (
+                  <View key={`steps-${index}`} style={styles.steps}>
+                    <Text style={styles.stepsTitle}>{block.title}</Text>
+                    {block.items.map((item, itemIndex) => (
+                      <View key={item} style={styles.stepRow}>
+                        <Text style={styles.stepIndex}>{itemIndex + 1}</Text>
+                        <Text style={styles.stepText}>{item}</Text>
+                      </View>
+                    ))}
+                  </View>
+                );
+              }
+              if (block.type === 'question') {
+                return <QuestionCard key={`q-${index}`} question={block} />;
+              }
+              if (block.type === 'plan') {
+                return <PlanCard key={`plan-${index}`} days={block.days} title={block.title} />;
+              }
+              return null;
+            })}
+
+          {(message.status === 'complete' || isError) && (
+            <MessageActions onCopy={onCopy} onRetry={isLastAssistant ? onRetry : undefined} onShare={onShare} />
+          )}
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
+  userRow: {
     width: '100%',
     paddingHorizontal: spacing.md,
     marginBottom: spacing.lg,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  userRow: {
-    justifyContent: 'flex-start',
-    flexDirection: 'row-reverse',
-  },
-  assistantRow: {
-    justifyContent: 'flex-start',
-  },
-  content: {
-    maxWidth: '86%',
-  },
-  userContent: {
-    alignItems: 'flex-end',
-  },
-  assistantContent: {
-    alignItems: 'flex-start',
-    flexShrink: 1,
-  },
-  bubble: {
-    borderRadius: radii.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
+    alignItems: layout.start,
   },
   userBubble: {
-    backgroundColor: colors.surfaceRaised,
-    borderTopRightRadius: radii.sm,
-  },
-  assistantBubble: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-  text: {
-    color: colors.text,
-    fontSize: 15,
-    lineHeight: 24,
-    textAlign: 'right',
-    writingDirection: 'rtl',
+    maxWidth: '82%',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.lg,
+    borderBottomRightRadius: radii.sm,
+    backgroundColor: colors.elevated,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   userText: {
+    ...typography.body,
+    ...rtlText,
     color: colors.text,
   },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
+  assistantRow: {
+    width: '100%',
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.lg,
+    alignItems: layout.end,
   },
-  action: {
-    padding: spacing.xxs,
+  assistantBody: {
+    width: '92%',
+    maxWidth: 560,
+  },
+  emptyText: {
+    ...typography.body,
+    ...rtlText,
+    color: colors.muted,
+  },
+  blockText: {
+    ...typography.body,
+    ...rtlText,
+    color: colors.text,
+    marginTop: spacing.sm,
+  },
+  context: {
+    alignSelf: 'flex-start',
+    marginTop: spacing.sm,
+    flexDirection: layout.row,
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 5,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  contextLabel: {
+    ...typography.micro,
+    color: colors.gold,
+  },
+  contextValue: {
+    ...typography.micro,
+    ...rtlText,
+    color: colors.muted,
+    textAlign: 'left',
+  },
+  steps: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  stepsTitle: {
+    ...typography.callout,
+    ...rtlText,
+    color: colors.text,
+  },
+  stepRow: {
+    flexDirection: layout.row,
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  stepIndex: {
+    width: 18,
+    marginTop: 2,
+    color: colors.gold,
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  stepText: {
+    flex: 1,
+    ...typography.callout,
+    ...rtlText,
+    color: colors.muted,
+    fontWeight: '400',
   },
 });
