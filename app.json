@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "مِعيار",
+    "slug": "miyaar-qudrat",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "miyaar",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.miyaar.qudrat"
+    },
+    "android": {
+      "package": "com.miyaar.qudrat",
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0F12"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": ["expo-router"]
+  }
+}
