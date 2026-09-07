@@ -9,6 +9,8 @@ npm install
 npm run start
 ```
 
+يحتوي المشروع على إعداد npm صغير لتثبيت peer dependencies الخاصة بـ Expo Router بشكل ثابت عبر بيئات التطوير المختلفة.
+
 ثم افتح المشروع عبر Expo Go أو شغّل نسخة الويب:
 
 ```bash
