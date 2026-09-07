@@ -1,40 +1,81 @@
 import { Feather } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, radii, spacing } from '@/src/theme/tokens';
+import { useKeyboardVisible } from '@/src/hooks/useKeyboardVisible';
+import { useReducedMotion } from '@/src/hooks/useReducedMotion';
+import { colors, motion, radii, rtlText, shadows, spacing, typography } from '@/src/theme/tokens';
 
 type ComposerProps = {
   draft: string;
   toolsOpen: boolean;
+  disabled?: boolean;
   onChangeDraft: (value: string) => void;
   onToggleTools: () => void;
   onSend: () => void;
   onVoice: () => void;
 };
 
-export function Composer({ draft, toolsOpen, onChangeDraft, onToggleTools, onSend, onVoice }: ComposerProps) {
-  const canSend = draft.trim().length > 0;
+export function Composer({
+  draft,
+  toolsOpen,
+  disabled = false,
+  onChangeDraft,
+  onToggleTools,
+  onSend,
+  onVoice,
+}: ComposerProps) {
+  const insets = useSafeAreaInsets();
+  const keyboardVisible = useKeyboardVisible();
+  const reduced = useReducedMotion();
+  const canSend = draft.trim().length > 0 && !disabled;
+  const plusSpin = useRef(new Animated.Value(0)).current;
+  const sendBlend = useRef(new Animated.Value(canSend ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(plusSpin, {
+      toValue: toolsOpen ? 1 : 0,
+      duration: reduced ? 0 : motion.swap,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [plusSpin, reduced, toolsOpen]);
+
+  useEffect(() => {
+    Animated.timing(sendBlend, {
+      toValue: canSend ? 1 : 0,
+      duration: reduced ? 0 : motion.swap,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [canSend, reduced, sendBlend]);
+
+  const plusRotate = plusSpin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] });
+  const sendScale = sendBlend.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { paddingBottom: keyboardVisible ? spacing.sm : Math.max(insets.bottom, spacing.sm) }]}>
       <View style={styles.composer}>
         <Pressable
-          accessibilityLabel="إضافة صورة أو أداة"
+          accessibilityLabel={toolsOpen ? 'إغلاق الأدوات' : 'إضافة صورة أو أداة'}
           accessibilityRole="button"
+          disabled={disabled}
           onPress={onToggleTools}
-          style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+          style={({ pressed }) => [styles.plusButton, pressed && styles.pressed]}
         >
-          <Feather color={toolsOpen ? colors.gold : colors.textMuted} name={toolsOpen ? 'x' : 'plus'} size={21} />
+          <Animated.View style={{ transform: [{ rotate: plusRotate }] }}>
+            <Feather color={toolsOpen ? colors.gold : colors.muted} name="plus" size={22} />
+          </Animated.View>
         </Pressable>
 
         <TextInput
           accessibilityLabel="اكتب رسالتك"
+          editable={!disabled}
           multiline
           onChangeText={onChangeDraft}
-          onSubmitEditing={canSend ? onSend : undefined}
           placeholder="اسأل عن القدرات..."
-          placeholderTextColor={colors.textDim}
-          returnKeyType="send"
+          placeholderTextColor={colors.dim}
           style={styles.input}
           textAlign="right"
           textAlignVertical="center"
@@ -44,10 +85,13 @@ export function Composer({ draft, toolsOpen, onChangeDraft, onToggleTools, onSen
         <Pressable
           accessibilityLabel={canSend ? 'إرسال الرسالة' : 'الإملاء الصوتي'}
           accessibilityRole="button"
+          disabled={disabled}
           onPress={canSend ? onSend : onVoice}
           style={({ pressed }) => [styles.sendButton, canSend && styles.sendButtonActive, pressed && styles.pressed]}
         >
-          <Feather color={canSend ? colors.ink : colors.textMuted} name={canSend ? 'arrow-up' : 'mic'} size={19} />
+          <Animated.View style={[styles.sendInner, { transform: [{ scale: sendScale }] }]}>
+            <Feather color={canSend ? colors.ink : colors.muted} name={canSend ? 'arrow-up' : 'mic'} size={18} />
+          </Animated.View>
         </Pressable>
       </View>
       <Text style={styles.disclaimer}>قد يخطئ مِعيار؛ راجع خطوات الحل ولا تحفظ الإجابة فقط.</Text>
@@ -59,55 +103,61 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
-    backgroundColor: colors.canvas,
+    backgroundColor: colors.ink,
   },
   composer: {
-    minHeight: 54,
+    minHeight: 56,
     padding: spacing.xs,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     gap: spacing.xs,
+    ...shadows.composer,
   },
   input: {
     flex: 1,
-    minHeight: 38,
-    maxHeight: 100,
+    minHeight: 40,
+    maxHeight: 120,
     paddingHorizontal: spacing.xs,
-    paddingVertical: 8,
+    paddingVertical: 10,
     color: colors.text,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
     writingDirection: 'rtl',
   },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.sm,
+  plusButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.sm,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.elevated,
   },
   sendButtonActive: {
     backgroundColor: colors.gold,
   },
+  sendInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   pressed: {
-    backgroundColor: colors.surfacePressed,
+    opacity: 0.82,
   },
   disclaimer: {
-    color: colors.textDim,
-    fontSize: 10,
+    ...typography.micro,
+    ...rtlText,
+    color: colors.dim,
     textAlign: 'center',
-    paddingVertical: spacing.xs,
-    writingDirection: 'rtl',
+    paddingTop: spacing.xs,
   },
 });

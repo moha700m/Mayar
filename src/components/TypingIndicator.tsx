@@ -1,20 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BrandMark } from '@/src/components/BrandMark';
-import { colors, spacing } from '@/src/theme/tokens';
+import { ThinkingOrb } from '@/src/components/ThinkingOrb';
+import { colors, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 export function TypingIndicator() {
   return (
-    <View style={styles.row}>
-      <BrandMark small />
-      <View style={styles.copy}>
-        <Text style={styles.label}>مِعيار يفكر...</Text>
-        <View style={styles.dots}>
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-        </View>
-      </View>
+    <View accessibilityLabel="مِعيار يفكر" style={styles.row}>
+      <ThinkingOrb active />
+      <Text style={styles.label}>مِعيار يفكر...</Text>
     </View>
   );
 }
@@ -24,26 +17,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  copy: {
-    alignItems: 'flex-start',
-    gap: spacing.xs,
+    minHeight: 36,
   },
   label: {
-    color: colors.textDim,
-    fontSize: 12,
-    writingDirection: 'rtl',
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 5,
-    backgroundColor: colors.gold,
+    ...typography.caption,
+    ...rtlText,
+    color: colors.muted,
+    textAlign: 'left',
   },
 });

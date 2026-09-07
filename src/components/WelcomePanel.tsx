@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '@/src/components/BrandMark';
 import { starterPrompts } from '@/src/data/chat';
-import { colors, radii, spacing } from '@/src/theme/tokens';
+import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 type WelcomePanelProps = {
   onPrompt: (value: string) => void;
@@ -12,22 +12,29 @@ type WelcomePanelProps = {
 export function WelcomePanel({ onPrompt }: WelcomePanelProps) {
   return (
     <View style={styles.container}>
-      <BrandMark />
-      <Text style={styles.heading}>وش نبدأ فيه؟</Text>
-      <Text style={styles.description}>
-        أنا مِعيار، مدربك الذكي للقدرات. أشرح لك الفكرة، أختبرك عليها، وأبني لك الخطوة التالية.
-      </Text>
+      <View style={styles.hero}>
+        <View style={styles.logoRing}>
+          <BrandMark size="lg" />
+        </View>
+        <Text style={styles.heading}>وش نبدأ فيه؟</Text>
+        <Text style={styles.description}>
+          أنا مِعيار، مدربك للكمي واللفظي. أشرح، أختبرك، وأبني خطوتك الجاية بدون تشتيت.
+        </Text>
+      </View>
 
-      <View style={styles.promptList}>
+      <View style={styles.promptGrid}>
         {starterPrompts.map((prompt) => (
           <Pressable
             key={prompt.label}
             accessibilityRole="button"
+            accessibilityLabel={prompt.label}
             onPress={() => onPrompt(prompt.value)}
             style={({ pressed }) => [styles.prompt, pressed && styles.promptPressed]}
           >
+            <View style={styles.promptIcon}>
+              <Feather color={colors.gold} name={prompt.icon} size={16} />
+            </View>
             <Text style={styles.promptLabel}>{prompt.label}</Text>
-            <Feather color={colors.textDim} name="arrow-up-left" size={16} />
           </Pressable>
         ))}
       </View>
@@ -40,58 +47,79 @@ export function WelcomePanel({ onPrompt }: WelcomePanelProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxl * 1.7,
-    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xxxl,
+    paddingBottom: spacing.md,
+    justifyContent: 'center',
+  },
+  hero: {
     alignItems: 'center',
   },
+  logoRing: {
+    padding: 7,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    borderColor: colors.goldBorder,
+    backgroundColor: colors.goldMuted,
+  },
   heading: {
+    ...typography.display,
+    ...rtlText,
     color: colors.text,
-    fontSize: 27,
-    fontWeight: '800',
     marginTop: spacing.lg,
-    writingDirection: 'rtl',
+    textAlign: 'center',
   },
   description: {
-    color: colors.textMuted,
-    fontSize: 15,
-    lineHeight: 25,
-    maxWidth: 330,
+    ...typography.body,
+    ...rtlText,
+    color: colors.muted,
     textAlign: 'center',
-    writingDirection: 'rtl',
     marginTop: spacing.sm,
+    maxWidth: 340,
+    alignSelf: 'center',
   },
-  promptList: {
-    width: '100%',
-    gap: spacing.sm,
+  promptGrid: {
     marginTop: spacing.xxl,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
   prompt: {
-    minHeight: 52,
+    width: '48%',
+    flexGrow: 1,
+    minWidth: 148,
+    minHeight: 72,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    gap: spacing.sm,
   },
   promptPressed: {
-    borderColor: colors.gold,
-    backgroundColor: colors.surfacePressed,
+    borderColor: colors.goldBorder,
+    backgroundColor: colors.elevated,
+  },
+  promptIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.goldMuted,
   },
   promptLabel: {
+    ...typography.callout,
+    ...rtlText,
     color: colors.text,
-    fontSize: 14,
-    fontWeight: '600',
-    writingDirection: 'rtl',
   },
   note: {
-    color: colors.textDim,
-    fontSize: 11,
+    ...typography.micro,
+    ...rtlText,
+    color: colors.dim,
     textAlign: 'center',
     marginTop: spacing.xl,
-    writingDirection: 'rtl',
   },
 });

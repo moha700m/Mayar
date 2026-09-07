@@ -2,36 +2,44 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, radii } from '@/src/theme/tokens';
 
-export function BrandMark({ small = false }: { small?: boolean }) {
+type BrandMarkProps = {
+  size?: 'sm' | 'md' | 'lg';
+};
+
+const sizes = {
+  sm: { box: 32, font: 17, radius: radii.sm },
+  md: { box: 44, font: 23, radius: radii.md },
+  lg: { box: 64, font: 32, radius: radii.lg },
+} as const;
+
+export function BrandMark({ size = 'md' }: BrandMarkProps) {
+  const metric = sizes[size];
+
   return (
-    <View style={[styles.mark, small && styles.smallMark]}>
-      <Text style={[styles.glyph, small && styles.smallGlyph]}>م</Text>
+    <View
+      accessibilityLabel="شعار مِعيار"
+      style={[
+        styles.mark,
+        {
+          width: metric.box,
+          height: metric.box,
+          borderRadius: metric.radius,
+        },
+      ]}
+    >
+      <Text style={[styles.glyph, { fontSize: metric.font, lineHeight: metric.font + 4 }]}>م</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   mark: {
-    width: 46,
-    height: 46,
-    borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.gold,
   },
-  smallMark: {
-    width: 32,
-    height: 32,
-    borderRadius: radii.sm,
-  },
   glyph: {
     color: colors.ink,
-    fontSize: 25,
     fontWeight: '800',
-    lineHeight: 30,
-  },
-  smallGlyph: {
-    fontSize: 18,
-    lineHeight: 22,
   },
 });

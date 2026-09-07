@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '@/src/components/BrandMark';
-import { colors, radii, spacing } from '@/src/theme/tokens';
+import { IconButton } from '@/src/components/IconButton';
+import { colors, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 type ChatHeaderProps = {
   onOpenDrawer: () => void;
@@ -12,76 +13,42 @@ type ChatHeaderProps = {
 export function ChatHeader({ onOpenDrawer, onNewConversation }: ChatHeaderProps) {
   return (
     <View style={styles.header}>
-      <Pressable
-        accessibilityLabel="فتح المحادثات"
-        accessibilityRole="button"
-        hitSlop={10}
-        onPress={onOpenDrawer}
-        style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-      >
-        <Feather color={colors.text} name="menu" size={21} />
-      </Pressable>
+      <IconButton accessibilityLabel="فتح المحادثات" onPress={onOpenDrawer}>
+        <Feather color={colors.text} name="menu" size={20} />
+      </IconButton>
 
       <View style={styles.identity}>
-        <BrandMark small />
-        <View style={styles.identityCopy}>
-          <Text style={styles.title}>مِعيار</Text>
-          <Text style={styles.subtitle}>مدرب القدرات</Text>
-        </View>
+        <BrandMark size="sm" />
+        <Text style={styles.title}>مِعيار</Text>
       </View>
 
-      <Pressable
-        accessibilityLabel="محادثة جديدة"
-        accessibilityRole="button"
-        hitSlop={10}
-        onPress={onNewConversation}
-        style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
-      >
-        <Feather color={colors.text} name="edit-3" size={19} />
-      </Pressable>
+      <IconButton accessibilityLabel="محادثة جديدة" onPress={onNewConversation}>
+        <Feather color={colors.text} name="edit-3" size={18} />
+      </IconButton>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    minHeight: 68,
-    paddingHorizontal: spacing.md,
+    minHeight: 56,
+    paddingHorizontal: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderSoft,
+    borderBottomColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.canvas,
+    backgroundColor: colors.ink,
   },
   identity: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
   },
-  identityCopy: {
-    alignItems: 'flex-end',
-  },
   title: {
+    ...typography.title,
+    ...rtlText,
     color: colors.text,
-    fontSize: 16,
-    fontWeight: '800',
-    writingDirection: 'rtl',
-  },
-  subtitle: {
-    color: colors.textDim,
-    fontSize: 11,
-    marginTop: 2,
-    writingDirection: 'rtl',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: radii.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: {
-    backgroundColor: colors.surfacePressed,
+    textAlign: 'left',
   },
 });

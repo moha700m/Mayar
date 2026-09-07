@@ -1,67 +1,119 @@
 import { Feather } from '@expo/vector-icons';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import { Animated, Easing, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMark } from '@/src/components/BrandMark';
-import { sampleConversations } from '@/src/data/chat';
-import { colors, radii, spacing } from '@/src/theme/tokens';
+import { useReducedMotion } from '@/src/hooks/useReducedMotion';
+import { colors, motion, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
+import type { Conversation } from '@/src/types';
 
 type ConversationDrawerProps = {
   visible: boolean;
+  conversations: Conversation[];
   onClose: () => void;
   onNewConversation: () => void;
+  onSelectConversation: (id: string) => void;
 };
 
-export function ConversationDrawer({ visible, onClose, onNewConversation }: ConversationDrawerProps) {
+export function ConversationDrawer({
+  visible,
+  conversations,
+  onClose,
+  onNewConversation,
+  onSelectConversation,
+}: ConversationDrawerProps) {
+  const reduced = useReducedMotion();
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      progress.setValue(reduced ? 1 : 0);
+    }
+    Animated.timing(progress, {
+      toValue: visible ? 1 : 0,
+      duration: reduced ? 0 : motion.sheet,
+      easing: visible ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [progress, reduced, visible]);
+
+  const current = conversations.find((item) => item.current);
+  const previous = conversations.filter((item) => !item.current);
+  const translateX = progress.interpolate({ inputRange: [0, 1], outputRange: [24, 0] });
+  const overlayOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+
+  const grouped = useMemo(
+    () => [
+      { title: 'المحادثة الحالية', items: current ? [current] : [] },
+      { title: 'محادثات سابقة', items: previous },
+    ],
+    [current, previous],
+  );
+
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.overlay}>
-        <Pressable accessibilityLabel="إغلاق قائمة المحادثات" onPress={onClose} style={styles.backdrop} />
-        <SafeAreaView edges={['top', 'bottom']} style={styles.drawer}>
-          <View style={styles.header}>
-            <View style={styles.headerIdentity}>
-              <BrandMark small />
-              <Text style={styles.heading}>المحادثات</Text>
-            </View>
-            <Pressable accessibilityLabel="إغلاق" onPress={onClose} style={styles.iconButton}>
-              <Feather color={colors.textMuted} name="x" size={20} />
-            </Pressable>
-          </View>
+    <Modal animationType="none" onRequestClose={onClose} transparent visible={visible}>
+      <View style={[styles.overlay, { direction: 'ltr' }]}>
+        <Animated.View style={[styles.backdropWrap, { opacity: overlayOpacity }]}>
+          <Pressable accessibilityLabel="إغلاق قائمة المحادثات" onPress={onClose} style={styles.backdrop} />
+        </Animated.View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={onNewConversation}
-            style={({ pressed }) => [styles.newConversation, pressed && styles.pressed]}
-          >
-            <Feather color={colors.ink} name="plus" size={18} />
-            <Text style={styles.newConversationLabel}>محادثة جديدة</Text>
-          </Pressable>
-
-          <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-            <Text style={styles.sectionLabel}>الأحدث</Text>
-            {sampleConversations.map((conversation) => (
-              <Pressable key={conversation.id} onPress={onClose} style={styles.conversation}>
-                <View style={styles.conversationIcon}>
-                  <Feather color={colors.textMuted} name="message-square" size={16} />
-                </View>
-                <View style={styles.conversationCopy}>
-                  <Text numberOfLines={1} style={styles.conversationTitle}>{conversation.title}</Text>
-                  <Text numberOfLines={1} style={styles.conversationPreview}>{conversation.preview}</Text>
-                </View>
-                <Text style={styles.updatedAt}>{conversation.updatedAt}</Text>
+        <Animated.View style={[styles.sheet, { transform: [{ translateX }] }]}>
+          <SafeAreaView edges={['top', 'bottom']} style={[styles.drawer, { direction: 'rtl' }]}>
+            <View style={styles.header}>
+              <View style={styles.headerIdentity}>
+                <BrandMark size="sm" />
+                <Text style={styles.heading}>المحادثات</Text>
+              </View>
+              <Pressable accessibilityLabel="إغلاق" onPress={onClose} style={styles.iconButton}>
+                <Feather color={colors.muted} name="x" size={20} />
               </Pressable>
-            ))}
-          </ScrollView>
-
-          <View style={styles.footer}>
-            <View style={styles.footerRow}>
-              <View style={styles.avatar}><Text style={styles.avatarText}>م</Text></View>
-              <Text style={styles.footerName}>محمد</Text>
-              <Feather color={colors.textDim} name="more-horizontal" size={19} />
             </View>
-            <Text style={styles.footerNote}>نسخة تدريبية — الحسابات والحفظ السحابي قريبًا</Text>
-          </View>
-        </SafeAreaView>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={onNewConversation}
+              style={({ pressed }) => [styles.newConversation, pressed && styles.pressed]}
+            >
+              <Feather color={colors.ink} name="plus" size={18} />
+              <Text style={styles.newConversationLabel}>محادثة جديدة</Text>
+            </Pressable>
+
+            <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+              {grouped.map((group) =>
+                group.items.length === 0 ? null : (
+                  <View key={group.title} style={styles.group}>
+                    <Text style={styles.sectionLabel}>{group.title}</Text>
+                    {group.items.map((conversation) => (
+                      <Pressable
+                        key={conversation.id}
+                        onPress={() => onSelectConversation(conversation.id)}
+                        style={({ pressed }) => [
+                          styles.conversation,
+                          conversation.current && styles.conversationCurrent,
+                          pressed && styles.pressed,
+                        ]}
+                      >
+                        <View style={styles.conversationIcon}>
+                          <Feather color={conversation.current ? colors.gold : colors.muted} name="message-square" size={16} />
+                        </View>
+                        <View style={styles.conversationCopy}>
+                          <Text numberOfLines={1} style={styles.conversationTitle}>
+                            {conversation.title}
+                          </Text>
+                          <Text numberOfLines={1} style={styles.conversationPreview}>
+                            {conversation.preview}
+                          </Text>
+                        </View>
+                        <Text style={styles.updatedAt}>{conversation.updatedAt}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                ),
+              )}
+            </ScrollView>
+          </SafeAreaView>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -71,24 +123,27 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.52)',
+  },
+  backdropWrap: {
+    flex: 1,
+    backgroundColor: colors.overlay,
   },
   backdrop: {
     flex: 1,
   },
+  sheet: {
+    width: '86%',
+    maxWidth: 360,
+  },
   drawer: {
-    width: '88%',
-    maxWidth: 390,
+    flex: 1,
     backgroundColor: colors.surface,
-    borderTopLeftRadius: radii.lg,
-    borderBottomLeftRadius: radii.lg,
-    overflow: 'hidden',
+    borderStartWidth: 1,
+    borderStartColor: colors.border,
   },
   header: {
-    minHeight: 74,
+    minHeight: 64,
     paddingHorizontal: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSoft,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -99,10 +154,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   heading: {
+    ...typography.title,
+    ...rtlText,
     color: colors.text,
-    fontSize: 17,
-    fontWeight: '800',
-    writingDirection: 'rtl',
+    textAlign: 'left',
   },
   iconButton: {
     width: 38,
@@ -112,8 +167,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
   },
   newConversation: {
-    minHeight: 48,
-    margin: spacing.md,
+    minHeight: 46,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
     borderRadius: radii.md,
     backgroundColor: colors.gold,
     flexDirection: 'row',
@@ -123,98 +179,65 @@ const styles = StyleSheet.create({
   },
   newConversationLabel: {
     color: colors.ink,
-    fontWeight: '800',
+    fontWeight: '700',
     fontSize: 14,
     writingDirection: 'rtl',
   },
   pressed: {
-    opacity: 0.8,
+    opacity: 0.84,
   },
   list: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,
   },
+  group: {
+    marginBottom: spacing.lg,
+  },
   sectionLabel: {
-    color: colors.textDim,
-    fontSize: 11,
-    fontWeight: '700',
+    ...typography.caption,
+    ...rtlText,
+    color: colors.dim,
     marginBottom: spacing.xs,
-    textAlign: 'right',
-    writingDirection: 'rtl',
   },
   conversation: {
-    minHeight: 64,
+    minHeight: 62,
     paddingVertical: spacing.sm,
-    flexDirection: 'row-reverse',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.md,
+    flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSoft,
+  },
+  conversationCurrent: {
+    backgroundColor: colors.goldMuted,
+    borderWidth: 1,
+    borderColor: colors.goldBorder,
   },
   conversationIcon: {
     width: 32,
     height: 32,
     borderRadius: radii.sm,
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.elevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
   conversationCopy: {
     flex: 1,
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
   },
   conversationTitle: {
+    ...typography.callout,
+    ...rtlText,
     color: colors.text,
-    fontSize: 13,
-    fontWeight: '700',
-    writingDirection: 'rtl',
   },
   conversationPreview: {
-    color: colors.textDim,
-    fontSize: 11,
-    marginTop: 4,
-    writingDirection: 'rtl',
+    ...typography.micro,
+    ...rtlText,
+    color: colors.dim,
+    marginTop: 3,
   },
   updatedAt: {
-    color: colors.textDim,
-    fontSize: 10,
-  },
-  footer: {
-    padding: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderSoft,
-  },
-  footerRow: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.blueSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: colors.blue,
-    fontWeight: '800',
-  },
-  footerName: {
-    flex: 1,
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  footerNote: {
-    color: colors.textDim,
-    fontSize: 10,
-    textAlign: 'right',
-    lineHeight: 16,
-    marginTop: spacing.xs,
-    writingDirection: 'rtl',
+    ...typography.micro,
+    color: colors.dim,
   },
 });
