@@ -84,6 +84,9 @@ export const motion = {
 
 export const shadows = {
   quiet: Platform.select<ViewStyle>({
+    web: {
+      boxShadow: '0 8px 18px rgba(0,0,0,0.22)',
+    },
     ios: {
       shadowColor: '#000000',
       shadowOffset: { width: 0, height: 8 },
@@ -101,6 +104,9 @@ export const shadows = {
     },
   }) ?? {},
   composer: Platform.select<ViewStyle>({
+    web: {
+      boxShadow: '0 4px 12px rgba(0,0,0,0.16)',
+    },
     ios: {
       shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },

@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 import type { AppNotice } from '@/src/types';
 
@@ -49,7 +50,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     borderRadius: radii.md,
     borderWidth: 1,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.sm,
   },

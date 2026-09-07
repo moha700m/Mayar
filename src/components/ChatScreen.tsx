@@ -328,7 +328,6 @@ export function ChatScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    direction: 'rtl',
     backgroundColor: colors.ink,
   },
   screen: {

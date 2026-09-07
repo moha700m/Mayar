@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { BrandMark } from '@/src/components/BrandMark';
 import { IconButton } from '@/src/components/IconButton';
 import { colors, rtlText, spacing, typography } from '@/src/theme/tokens';
+import { layout } from '@/src/theme/layout';
 
 type ChatHeaderProps = {
   onOpenDrawer: () => void;
@@ -35,13 +36,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: colors.ink,
   },
   identity: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.sm,
   },

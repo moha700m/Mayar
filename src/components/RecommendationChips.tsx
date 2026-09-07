@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 type RecommendationChipsProps = {
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
   row: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     flexWrap: 'wrap',
     gap: spacing.xs,
   },

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 import type { PlanDay } from '@/src/types';
 
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'flex-start',
     gap: spacing.sm,
   },

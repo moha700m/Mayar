@@ -24,6 +24,8 @@ export function initMotionPreference() {
   });
 }
 
+export const nativeDriver = Platform.OS !== 'web';
+
 export function prefersReducedMotion() {
   return reduceMotionEnabled;
 }

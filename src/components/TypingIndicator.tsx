@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { ThinkingOrb } from '@/src/components/ThinkingOrb';
+import { layout } from '@/src/theme/layout';
 import { colors, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 export function TypingIndicator() {
@@ -14,7 +15,7 @@ export function TypingIndicator() {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
+    flexDirection: layout.rowPhysical,
     alignItems: 'center',
     gap: spacing.sm,
     minHeight: 36,

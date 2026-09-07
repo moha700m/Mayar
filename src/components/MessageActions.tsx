@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 type MessageActionsProps = {
@@ -44,13 +45,13 @@ function Action({
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.xs,
     marginTop: spacing.sm,
   },
   action: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: 5,
     paddingHorizontal: spacing.xs,

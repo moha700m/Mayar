@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { toolPrompts } from '@/src/data/chat';
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 type ToolTrayProps = {
@@ -31,12 +32,12 @@ const styles = StyleSheet.create({
   tray: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     flexWrap: 'wrap',
     gap: spacing.xs,
   },
   tool: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: 6,
     minHeight: 36,

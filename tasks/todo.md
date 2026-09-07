@@ -9,8 +9,8 @@
 - [x] Question cards, plan rows, and message actions
 - [x] Offline / error / retry / reduced motion
 - [x] README, DESIGN.md, and environment guidance
-- [ ] Typecheck / Expo config verification
-- [ ] Preview verification on compact chat layout
+- [x] Typecheck / Expo config verification
+- [x] Preview verification on compact chat layout
 
 ## Definition of Done
 

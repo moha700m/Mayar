@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 
 import { useReducedMotion } from '@/src/hooks/useReducedMotion';
+import { nativeDriver } from '@/src/theme/motion';
 import { colors, motion } from '@/src/theme/tokens';
 
 type ThinkingOrbProps = {
@@ -29,13 +30,13 @@ export function ThinkingOrb({ size = 22, active = true }: ThinkingOrbProps) {
           toValue: 1,
           duration: 900,
           easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
+          useNativeDriver: nativeDriver,
         }),
         Animated.timing(pulse, {
           toValue: 0,
           duration: 900,
           easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
+          useNativeDriver: nativeDriver,
         }),
       ]),
     );
@@ -45,7 +46,7 @@ export function ThinkingOrb({ size = 22, active = true }: ThinkingOrbProps) {
         toValue: 1,
         duration: 4200,
         easing: Easing.linear,
-        useNativeDriver: true,
+        useNativeDriver: nativeDriver,
       }),
     );
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { expandLayout } from '@/src/theme/motion';
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 import type { MessageBlock } from '@/src/types';
 
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   },
   meta: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: layout.start,
     marginBottom: spacing.sm,
   },
   pill: {
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.elevated,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.sm,
   },
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     color: colors.danger,
   },
   stepRow: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'flex-start',
     gap: spacing.sm,
   },

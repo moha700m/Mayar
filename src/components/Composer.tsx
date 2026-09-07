@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useKeyboardVisible } from '@/src/hooks/useKeyboardVisible';
 import { useReducedMotion } from '@/src/hooks/useReducedMotion';
+import { layout } from '@/src/theme/layout';
+import { nativeDriver } from '@/src/theme/motion';
 import { colors, motion, radii, rtlText, shadows, spacing, typography } from '@/src/theme/tokens';
 
 type ComposerProps = {
@@ -38,7 +40,7 @@ export function Composer({
       toValue: toolsOpen ? 1 : 0,
       duration: reduced ? 0 : motion.swap,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
+      useNativeDriver: nativeDriver,
     }).start();
   }, [plusSpin, reduced, toolsOpen]);
 
@@ -47,7 +49,7 @@ export function Composer({
       toValue: canSend ? 1 : 0,
       duration: reduced ? 0 : motion.swap,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
+      useNativeDriver: nativeDriver,
     }).start();
   }, [canSend, reduced, sendBlend]);
 
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderStrong,
     backgroundColor: colors.surface,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'flex-end',
     gap: spacing.xs,
     ...shadows.composer,

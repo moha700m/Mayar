@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMark } from '@/src/components/BrandMark';
 import { useReducedMotion } from '@/src/hooks/useReducedMotion';
+import { layout } from '@/src/theme/layout';
+import { nativeDriver } from '@/src/theme/motion';
 import { colors, motion, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 import type { Conversation } from '@/src/types';
 
@@ -34,7 +36,7 @@ export function ConversationDrawer({
       toValue: visible ? 1 : 0,
       duration: reduced ? 0 : motion.sheet,
       easing: visible ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver: nativeDriver,
     }).start();
   }, [progress, reduced, visible]);
 
@@ -53,13 +55,13 @@ export function ConversationDrawer({
 
   return (
     <Modal animationType="none" onRequestClose={onClose} transparent visible={visible}>
-      <View style={[styles.overlay, { direction: 'ltr' }]}>
+      <View style={styles.overlay}>
         <Animated.View style={[styles.backdropWrap, { opacity: overlayOpacity }]}>
           <Pressable accessibilityLabel="إغلاق قائمة المحادثات" onPress={onClose} style={styles.backdrop} />
         </Animated.View>
 
         <Animated.View style={[styles.sheet, { transform: [{ translateX }] }]}>
-          <SafeAreaView edges={['top', 'bottom']} style={[styles.drawer, { direction: 'rtl' }]}>
+          <SafeAreaView edges={['top', 'bottom']} style={styles.drawer}>
             <View style={styles.header}>
               <View style={styles.headerIdentity}>
                 <BrandMark size="sm" />
@@ -122,7 +124,7 @@ export function ConversationDrawer({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: layout.rowPhysical,
   },
   backdropWrap: {
     flex: 1,
@@ -138,18 +140,18 @@ const styles = StyleSheet.create({
   drawer: {
     flex: 1,
     backgroundColor: colors.surface,
-    borderStartWidth: 1,
-    borderStartColor: colors.border,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.border,
   },
   header: {
     minHeight: 64,
     paddingHorizontal: spacing.md,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   headerIdentity: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.sm,
   },
@@ -204,7 +206,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.md,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.sm,
   },
@@ -223,7 +225,7 @@ const styles = StyleSheet.create({
   },
   conversationCopy: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: layout.start,
   },
   conversationTitle: {
     ...typography.callout,

@@ -5,6 +5,7 @@ import { PlanCard } from '@/src/components/PlanCard';
 import { QuestionCard } from '@/src/components/QuestionCard';
 import { StreamingText } from '@/src/components/StreamingText';
 import { TypingIndicator } from '@/src/components/TypingIndicator';
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 import type { ChatMessage } from '@/src/types';
 
@@ -100,14 +101,14 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: spacing.md,
     marginBottom: spacing.lg,
-    alignItems: 'flex-start',
+    alignItems: layout.start,
   },
   userBubble: {
     maxWidth: '82%',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.lg,
-    borderEndStartRadius: radii.sm,
+    borderBottomRightRadius: radii.sm,
     backgroundColor: colors.elevated,
     borderWidth: 1,
     borderColor: colors.border,
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: spacing.md,
     marginBottom: spacing.lg,
-    alignItems: 'flex-end',
+    alignItems: layout.end,
   },
   assistantBody: {
     width: '92%',
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
   context: {
     alignSelf: 'flex-start',
     marginTop: spacing.sm,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'center',
     gap: spacing.xs,
     paddingHorizontal: spacing.sm,
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   stepRow: {
-    flexDirection: 'row',
+    flexDirection: layout.row,
     alignItems: 'flex-start',
     gap: spacing.sm,
   },

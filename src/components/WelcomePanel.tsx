@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '@/src/components/BrandMark';
 import { starterPrompts } from '@/src/data/chat';
+import { layout } from '@/src/theme/layout';
 import { colors, radii, rtlText, spacing, typography } from '@/src/theme/tokens';
 
 type WelcomePanelProps = {
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   },
   promptGrid: {
     marginTop: spacing.xxl,
-    flexDirection: 'row',
+    flexDirection: layout.row,
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
@@ -96,6 +97,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
     justifyContent: 'space-between',
+    alignItems: layout.start,
     gap: spacing.sm,
   },
   promptPressed: {

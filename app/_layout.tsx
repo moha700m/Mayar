@@ -20,7 +20,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ flex: 1, direction: 'rtl', backgroundColor: colors.ink }}>
+      <View style={{ flex: 1, backgroundColor: colors.ink }}>
         <StatusBar style="light" />
         <Stack screenOptions={{ animation: 'fade', headerShown: false, contentStyle: { backgroundColor: colors.ink } }} />
       </View>
