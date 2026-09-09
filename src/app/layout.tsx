@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -15,13 +17,13 @@ const ibmPlexArabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "ترندكس | منتجات علي إكسبريس الترند",
+  title: "ترندكس | نون · عروض السعودية · أمازون",
   description:
-    "اكتشف المنتجات الأكثر رواجًا على علي إكسبريس: إلكترونيات، منزل، جمال، أزياء والمزيد.",
+    "إيش يبحثون الآن في السوق السعودي؟ منتجات وأسعار بالريال من نون وعروض السعودية وأمازون وعلي إكسبريس.",
   openGraph: {
-    title: "ترندكس | منتجات علي إكسبريس الترند",
+    title: "ترندكس | نون · عروض السعودية · أمازون",
     description:
-      "تابع الترندات اليومية وانتقل مباشرة لصفحات الشراء على علي إكسبريس.",
+      "ادخل على المنتج مباشرة وتابع ترندات البحث في السوق السعودي.",
     locale: "ar_SA",
     type: "website",
   },
@@ -38,7 +40,11 @@ export default function RootLayout({
       dir="rtl"
       className={`${cairo.variable} ${ibmPlexArabic.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <SiteHeader />
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
+      </body>
     </html>
   );
 }
