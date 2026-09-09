@@ -1,4 +1,4 @@
-name: Mobile quality
+name: Quality
 
 on:
   push:
@@ -25,5 +25,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Validate Expo configuration
-        run: npx expo config --json > /tmp/expo-config.json
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
