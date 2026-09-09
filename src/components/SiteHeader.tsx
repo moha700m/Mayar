@@ -2,8 +2,8 @@ import Link from "next/link";
 
 export function SiteHeader() {
   return (
-    <header className="absolute inset-x-0 top-0 z-20">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+    <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[rgba(4,15,14,0.88)] backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
         <Link href="/" className="group flex items-center gap-2">
           <span
             aria-hidden
@@ -12,23 +12,15 @@ export function SiteHeader() {
             ت
           </span>
           <span
-            className="font-[family-name:var(--font-display)] text-xl font-bold tracking-tight text-[var(--text)] sm:text-2xl"
+            className="text-xl font-bold tracking-tight text-[var(--text)] sm:text-2xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
             ترندكس
           </span>
         </Link>
-        <nav className="flex items-center gap-4 text-sm text-[var(--muted)]">
-          <a href="#products" className="transition hover:text-[var(--text)]">
-            المنتجات
-          </a>
-          <a
-            href="#products"
-            className="rounded-full bg-[var(--lime)] px-4 py-2 font-semibold text-[#102018] transition hover:bg-[var(--lime-deep)] hover:text-white"
-          >
-            اكتشف الترند
-          </a>
-        </nav>
+        <p className="hidden text-sm text-[var(--muted)] sm:block">
+          علي بابا · أسعار بالريال
+        </p>
       </div>
     </header>
   );

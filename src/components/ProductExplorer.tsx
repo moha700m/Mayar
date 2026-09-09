@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import type { CategoryId, Product } from "@/data/products";
+import type { CategoryId, MarketplaceId, Product } from "@/data/products";
 import { CategoryFilter } from "@/components/CategoryFilter";
+import { MarketplaceFilter } from "@/components/MarketplaceFilter";
 import { ProductCard } from "@/components/ProductCard";
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 
 export function ProductExplorer({ initialProducts, source }: Props) {
   const [category, setCategory] = useState<CategoryId>("all");
+  const [marketplace, setMarketplace] = useState<MarketplaceId>("all");
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -20,56 +22,66 @@ export function ProductExplorer({ initialProducts, source }: Props) {
     return initialProducts.filter((product) => {
       const categoryOk =
         category === "all" ? true : product.category === category;
-      if (!categoryOk) return false;
+      const marketOk =
+        marketplace === "all" ? true : product.marketplace === marketplace;
+      if (!categoryOk || !marketOk) return false;
       if (!normalized) return true;
       return (
         product.titleAr.includes(query.trim()) ||
-        product.title.toLowerCase().includes(normalized)
+        product.title.toLowerCase().includes(normalized) ||
+        product.marketplace.includes(normalized)
       );
     });
-  }, [category, initialProducts, query]);
+  }, [category, initialProducts, marketplace, query]);
 
   return (
-    <section id="products" className="scroll-mt-8 px-5 py-16 sm:px-8 sm:py-24">
+    <section id="products" className="scroll-mt-8 px-5 pb-16 pt-6 sm:px-8 sm:pb-24">
       <div className="mx-auto w-full max-w-6xl">
-        <div className="mb-8 max-w-2xl">
+        <div className="mb-6 max-w-3xl">
           <p className="mb-2 text-sm font-semibold tracking-wide text-[var(--ember-soft)]">
-            الترند اليوم
+            علي بابا · علي إكسبريس · أمازون · عروض فنون
           </p>
-          <h2
+          <h1
             className="text-3xl font-extrabold text-[var(--text)] sm:text-4xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            منتجات تتصدر المبيعات
-          </h2>
+            ادخل على المنتج مباشرة
+          </h1>
           <p className="mt-3 text-[var(--muted)]">
-            مجموعة محدّثة من المنتجات الرائجة على علي إكسبريس، مرتبة حسب حجم
-            الطلبات.
+            أسعار بالريال السعودي. اختر المنصة ثم افتح صفحة المنتج واشترِ فورًا.
             {source === "curated"
-              ? " (عرض تجريبي جاهز — اربط مفاتيح Affiliate API للبيانات الحية)"
-              : " (بيانات مباشرة من واجهة علي إكسبريس)"}
+              ? " (عرض تجريبي جاهز)"
+              : " (يشمل بيانات حية من علي إكسبريس)"}
           </p>
         </div>
 
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CategoryFilter
-            active={category}
+        <div className="mb-4 space-y-3">
+          <MarketplaceFilter
+            active={marketplace}
             onChange={(id) => {
-              startTransition(() => setCategory(id));
+              startTransition(() => setMarketplace(id));
             }}
           />
-          <label className="relative block w-full sm:max-w-xs">
-            <span className="sr-only">بحث عن منتج</span>
-            <input
-              value={query}
-              onChange={(event) => {
-                const value = event.target.value;
-                startTransition(() => setQuery(value));
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <CategoryFilter
+              active={category}
+              onChange={(id) => {
+                startTransition(() => setCategory(id));
               }}
-              placeholder="ابحث عن منتج..."
-              className="w-full rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-[rgba(255,90,60,0.55)]"
             />
-          </label>
+            <label className="relative block w-full sm:max-w-xs">
+              <span className="sr-only">بحث عن منتج</span>
+              <input
+                value={query}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  startTransition(() => setQuery(value));
+                }}
+                placeholder="ابحث عن منتج..."
+                className="w-full rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-[rgba(255,90,60,0.55)]"
+              />
+            </label>
+          </div>
         </div>
 
         <p className="mb-5 text-sm text-[var(--muted)]">
@@ -78,7 +90,7 @@ export function ProductExplorer({ initialProducts, source }: Props) {
 
         {filtered.length === 0 ? (
           <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-6 py-16 text-center text-[var(--muted)]">
-            لا توجد منتجات مطابقة. جرّب فئة أخرى أو امسح البحث.
+            لا توجد منتجات مطابقة. جرّب منصة أو فئة أخرى.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
