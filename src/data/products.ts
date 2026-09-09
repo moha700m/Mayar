@@ -51,7 +51,7 @@ export const trendingProducts: Product[] = [
     rating: 4.8,
     orders: 48200,
     image:
-      "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=900&q=80",
     imageAlt: "شاحن محمول لاسلكي",
     badge: "ساخن",
     searchQuery: "magnetic wireless power bank 10000mah",
