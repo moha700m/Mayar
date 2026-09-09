@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type {
   CategoryId,
   MarketplaceId,
   Product,
   TrendingSearch,
 } from "@/data/products";
+import type { CompareResult, RankedOffer } from "@/data/comparisons";
 import { searchComparisons } from "@/data/comparisons";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { CompareCard } from "@/components/CompareCard";
@@ -14,10 +15,74 @@ import { MarketplaceFilter } from "@/components/MarketplaceFilter";
 import { ProductCard } from "@/components/ProductCard";
 import { TrendingSearches } from "@/components/TrendingSearches";
 
+type LiveMeta = {
+  fetchedAt: string;
+  fx: { usdToSar: number; source: "live" | "fallback" };
+  providers: { aliexpress: boolean; amazon: boolean; feed: boolean };
+  updatedOffers: number;
+};
+
+type ApiOffer = {
+  marketplace: RankedOffer["marketplace"];
+  label: string;
+  price: number;
+  originalPrice: number;
+  isCheapest: boolean;
+  live: boolean;
+  priceSource: RankedOffer["priceSource"];
+  fetchedAt?: string;
+  productUrl: string;
+};
+
+type ApiResult = {
+  id: string;
+  titleAr: string;
+  title: string;
+  image: string;
+  imageAlt: string;
+  matchNote: string;
+  category: CompareResult["category"];
+  liveCount: number;
+  savingsVsHighest: number;
+  offers: ApiOffer[];
+};
+
 type Props = {
   initialProducts: Product[];
   source: "live" | "curated";
 };
+
+function toCompareResult(item: ApiResult): CompareResult {
+  const rankedOffers: RankedOffer[] = item.offers.map((offer) => ({
+    marketplace: offer.marketplace,
+    price: offer.price,
+    originalPrice: offer.originalPrice,
+    productUrl: offer.productUrl,
+    seller: offer.label,
+    inStock: true,
+    live: offer.live,
+    priceSource: offer.priceSource,
+    fetchedAt: offer.fetchedAt,
+    isCheapest: offer.isCheapest,
+    label: offer.label,
+  }));
+
+  return {
+    id: item.id,
+    titleAr: item.titleAr,
+    title: item.title,
+    category: item.category,
+    image: item.image,
+    imageAlt: item.imageAlt,
+    keywords: [],
+    matchNote: item.matchNote,
+    offers: rankedOffers,
+    rankedOffers,
+    cheapest: rankedOffers.find((offer) => offer.isCheapest) ?? rankedOffers[0],
+    savingsVsHighest: item.savingsVsHighest,
+    liveCount: item.liveCount,
+  };
+}
 
 export function ProductExplorer({ initialProducts, source }: Props) {
   const [category, setCategory] = useState<CategoryId>("all");
@@ -25,12 +90,59 @@ export function ProductExplorer({ initialProducts, source }: Props) {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"compare" | "browse">("compare");
   const [isPending, startTransition] = useTransition();
+  const [liveResults, setLiveResults] = useState<CompareResult[] | null>(null);
+  const [liveMeta, setLiveMeta] = useState<LiveMeta | null>(null);
+  const [liveError, setLiveError] = useState(false);
+  const [loadingLive, setLoadingLive] = useState(true);
 
-  const comparisons = useMemo(() => {
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function loadLive() {
+      setLoadingLive(true);
+      setLiveError(false);
+      try {
+        const response = await fetch(
+          `/api/compare?q=${encodeURIComponent(query)}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) throw new Error("compare api failed");
+        const json = (await response.json()) as {
+          meta: LiveMeta;
+          results: ApiResult[];
+        };
+        if (cancelled) return;
+        setLiveResults(json.results.map(toCompareResult));
+        setLiveMeta(json.meta);
+      } catch {
+        if (!cancelled) {
+          setLiveError(true);
+          setLiveResults(null);
+        }
+      } finally {
+        if (!cancelled) setLoadingLive(false);
+      }
+    }
+
+    void loadLive();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [query]);
+
+  const fallbackComparisons = useMemo(() => {
     const results = searchComparisons(query);
     if (category === "all") return results;
     return results.filter((item) => item.category === category);
   }, [category, query]);
+
+  const comparisons = useMemo(() => {
+    const sourceResults = liveResults ?? fallbackComparisons;
+    if (category === "all") return sourceResults;
+    return sourceResults.filter((item) => item.category === category);
+  }, [category, fallbackComparisons, liveResults]);
 
   const filteredProducts = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -63,7 +175,7 @@ export function ProductExplorer({ initialProducts, source }: Props) {
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-6 max-w-3xl">
           <p className="mb-2 text-sm font-semibold tracking-wide text-[var(--ember-soft)]">
-            قارن السعر في كل المواقع · نفس المنتج
+            أسعار حية · قارن في كل المواقع · نفس المنتج
           </p>
           <h1
             className="text-3xl font-extrabold text-[var(--text)] sm:text-4xl"
@@ -72,10 +184,26 @@ export function ProductExplorer({ initialProducts, source }: Props) {
             ابحث وقارن: وين الأرخص؟
           </h1>
           <p className="mt-3 text-[var(--muted)]">
-            البحث يقارن نفس المنتج على نون وعروض السعودية وأمازون وعلي إكسبريس
-            وعلي بابا، ويوريك الأرخص مع رابط يدخلك على المنتج.
-            {source === "curated" ? " (عرض تجريبي جاهز)" : ""}
+            نحدّث الأسعار حسب الصرف الحي ومصادر المنصات عند توفر المفاتيح. الرابط
+            يفتح نفس المنتج على المنصة.
+            {source === "curated" ? "" : " (كتالوج علي إكسبريس متصل)"}
           </p>
+          {liveMeta ? (
+            <p className="mt-2 text-xs text-[var(--muted)]">
+              آخر تحديث: {new Date(liveMeta.fetchedAt).toLocaleString("ar-SA")} ·
+              USD/SAR {liveMeta.fx.usdToSar.toFixed(3)} (
+              {liveMeta.fx.source === "live" ? "حي" : "احتياطي"}) · عروض محدّثة:{" "}
+              {liveMeta.updatedOffers}
+              {liveMeta.providers.aliexpress ? " · AliExpress API" : ""}
+              {liveMeta.providers.amazon ? " · Amazon API" : ""}
+              {liveMeta.providers.feed ? " · Feed" : ""}
+            </p>
+          ) : null}
+          {liveError ? (
+            <p className="mt-2 text-xs text-[var(--ember-soft)]">
+              تعذر جلب الأسعار الحية مؤقتًا — عرض النسخة المحلية.
+            </p>
+          ) : null}
         </div>
 
         <TrendingSearches activeQuery={query} onSelect={applySearch} />
@@ -132,7 +260,7 @@ export function ProductExplorer({ initialProducts, source }: Props) {
                     setMode("compare");
                   });
                 }}
-                placeholder="ابحث وقارن في كل المواقع..."
+                placeholder="ابحث وقارن بأسعار حية..."
                 className="w-full rounded-full border border-[var(--line)] bg-[var(--surface)] px-4 py-2.5 text-sm text-[var(--text)] outline-none placeholder:text-[var(--muted)] focus:border-[rgba(255,90,60,0.55)]"
               />
             </label>
@@ -140,8 +268,8 @@ export function ProductExplorer({ initialProducts, source }: Props) {
         </div>
 
         <p className="mb-5 text-sm text-[var(--muted)]">
-          {isPending
-            ? "جاري المقارنة..."
+          {isPending || loadingLive
+            ? "جاري تحديث الأسعار الحية..."
             : mode === "compare"
               ? `${comparisons.length} منتج للمقارنة`
               : `${filteredProducts.length} منتج`}

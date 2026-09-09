@@ -31,7 +31,8 @@ export function CompareCard({ result, index = 0 }: Props) {
         <div className="space-y-4 p-4 sm:p-5">
           <div>
             <p className="mb-1 text-xs font-semibold text-[var(--ember-soft)]">
-              نفس المنتج · مقارنة كل المواقع
+              نفس المنتج · مقارنة حية عبر المواقع
+              {result.liveCount > 0 ? ` · ${result.liveCount} أسعار مباشرة` : ""}
             </p>
             <Link href={`/compare/${result.id}`}>
               <h3
@@ -47,6 +48,7 @@ export function CompareCard({ result, index = 0 }: Props) {
           <div className="rounded-xl border border-[rgba(198,242,85,0.35)] bg-[rgba(198,242,85,0.08)] px-3 py-2 text-sm font-bold text-[var(--lime)]">
             الأرخص الآن: {result.cheapest.label} —{" "}
             {formatSar(result.cheapest.price)}
+            {result.cheapest.live ? " · حي" : ""}
             {result.savingsVsHighest > 0
               ? ` · توفير حتى ${formatSar(result.savingsVsHighest)}`
               : ""}
@@ -73,9 +75,17 @@ export function CompareCard({ result, index = 0 }: Props) {
                           الأرخص
                         </span>
                       ) : null}
+                      {offer.live ? (
+                        <span className="ms-2 rounded-full bg-[var(--ember)] px-2 py-0.5 text-[10px] font-extrabold text-white">
+                          حي
+                        </span>
+                      ) : null}
                     </p>
                     <p className="truncate text-xs text-[var(--muted)]">
                       {offer.seller ?? offer.label} · نفس المنتج
+                      {offer.priceSource && offer.priceSource !== "curated"
+                        ? ` · ${offer.priceSource}`
+                        : ""}
                     </p>
                   </div>
                   <div className="shrink-0 text-end">

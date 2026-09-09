@@ -14,6 +14,12 @@ export type MarketOffer = {
   productUrl: string;
   seller?: string;
   inStock: boolean;
+  /** Optional USD baseline for live FX conversion */
+  basePriceUsd?: number;
+  baseOriginalUsd?: number;
+  live?: boolean;
+  priceSource?: "aliexpress" | "amazon" | "feed" | "fx" | "curated";
+  fetchedAt?: string;
 };
 
 export type CompareGroup = {
@@ -459,6 +465,7 @@ export type CompareResult = CompareGroup & {
   cheapest: RankedOffer;
   rankedOffers: RankedOffer[];
   savingsVsHighest: number;
+  liveCount: number;
 };
 
 export function rankOffers(offers: MarketOffer[]): RankedOffer[] {
@@ -482,16 +489,21 @@ export function toCompareResult(group: CompareGroup): CompareResult {
     rankedOffers,
     cheapest,
     savingsVsHighest: Math.max(0, highest - cheapest.price),
+    liveCount: rankedOffers.filter((offer) => offer.live).length,
   };
 }
 
-export function searchComparisons(query: string): CompareResult[] {
+export function searchComparisons(
+  query: string,
+  groups: CompareGroup[] = compareGroups,
+): CompareResult[] {
   const q = query.trim().toLowerCase();
+  const source = groups.length ? groups : compareGroups;
   if (!q) {
-    return compareGroups.map(toCompareResult);
+    return source.map(toCompareResult);
   }
 
-  return compareGroups
+  return source
     .filter((group) => {
       if (group.titleAr.includes(query.trim())) return true;
       if (group.title.toLowerCase().includes(q)) return true;
@@ -502,16 +514,20 @@ export function searchComparisons(query: string): CompareResult[] {
     .map(toCompareResult);
 }
 
-export function getCompareGroup(id: string): CompareResult | undefined {
-  const group = compareGroups.find((item) => item.id === id);
+export function getCompareGroup(
+  id: string,
+  groups: CompareGroup[] = compareGroups,
+): CompareResult | undefined {
+  const group = groups.find((item) => item.id === id);
   return group ? toCompareResult(group) : undefined;
 }
 
 export function findComparisonForProduct(
   product: Product,
+  groups: CompareGroup[] = compareGroups,
 ): CompareResult | undefined {
   const hay = `${product.titleAr} ${product.title} ${product.searchQuery}`.toLowerCase();
-  const group = compareGroups.find((item) =>
+  const group = groups.find((item) =>
     item.keywords.some((keyword) => hay.includes(keyword.toLowerCase())),
   );
   return group ? toCompareResult(group) : undefined;

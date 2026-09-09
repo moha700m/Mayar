@@ -1,7 +1,8 @@
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { findComparisonForProduct } from "@/data/comparisons";
+import { getLiveComparisons } from "@/lib/compare-live";
 import {
   discountPercent,
   externalBuyUrl,
@@ -31,13 +32,18 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const discount = discountPercent(product);
-  const comparison = findComparisonForProduct(product);
-  const matchedOffer = comparison?.rankedOffers.find(
+  const { results } = await getLiveComparisons("");
+  const staticMatch = findComparisonForProduct(product);
+  const liveComparison =
+    (staticMatch && results.find((item) => item.id === staticMatch.id)) ||
+    undefined;
+
+  const matchedOffer = liveComparison?.rankedOffers.find(
     (offer) => offer.marketplace === product.marketplace,
   );
   const buyUrl =
-    comparison && matchedOffer
-      ? `/go/${comparison.id}/${matchedOffer.marketplace}`
+    liveComparison && matchedOffer
+      ? `/go/${liveComparison.id}/${matchedOffer.marketplace}`
       : externalBuyUrl(product);
 
   return (
@@ -77,17 +83,23 @@ export default async function ProductPage({ params }: Props) {
           <div className="mt-8 flex flex-wrap items-end gap-4">
             <div>
               <p className="text-3xl font-extrabold text-[var(--lime)]">
-                {formatSar(product.price)}
+                {formatSar(matchedOffer?.price ?? product.price)}
               </p>
-              {product.originalPrice > product.price ? (
+              {(matchedOffer?.originalPrice ?? product.originalPrice) >
+              (matchedOffer?.price ?? product.price) ? (
                 <p className="text-base text-[var(--muted)] line-through">
-                  {formatSar(product.originalPrice)}
+                  {formatSar(matchedOffer?.originalPrice ?? product.originalPrice)}
                 </p>
               ) : null}
             </div>
             {discount > 0 ? (
               <span className="rounded-full bg-[var(--lime)] px-3 py-1 text-sm font-bold text-[#132016]">
                 خصم {discount}%
+              </span>
+            ) : null}
+            {matchedOffer?.live ? (
+              <span className="rounded-full bg-[var(--ember)] px-3 py-1 text-sm font-bold text-white">
+                سعر حي
               </span>
             ) : null}
           </div>
@@ -106,28 +118,28 @@ export default async function ProductPage({ params }: Props) {
             اشترِ نفس المنتج من {marketplaceLabels[product.marketplace]}
           </a>
 
-          {comparison ? (
+          {liveComparison ? (
             <div className="mt-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="font-bold text-[var(--text)]">
-                  قارن نفس المنتج في كل المواقع
+                  قارن نفس المنتج — أسعار حية
                 </p>
                 <Link
-                  href={`/compare/${comparison.id}`}
+                  href={`/compare/${liveComparison.id}`}
                   className="text-sm font-semibold text-[var(--ember-soft)]"
                 >
                   التفاصيل
                 </Link>
               </div>
               <p className="mb-3 text-sm text-[var(--lime)]">
-                الأرخص: {comparison.cheapest.label} —{" "}
-                {formatSar(comparison.cheapest.price)}
+                الأرخص: {liveComparison.cheapest.label} —{" "}
+                {formatSar(liveComparison.cheapest.price)}
               </p>
               <ul className="space-y-2">
-                {comparison.rankedOffers.slice(0, 4).map((offer) => (
+                {liveComparison.rankedOffers.slice(0, 4).map((offer) => (
                   <li key={offer.marketplace}>
                     <a
-                      href={`/go/${comparison.id}/${offer.marketplace}`}
+                      href={`/go/${liveComparison.id}/${offer.marketplace}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-between rounded-xl border border-[var(--line)] px-3 py-2 text-sm transition hover:border-[rgba(255,90,60,0.45)]"
@@ -135,6 +147,7 @@ export default async function ProductPage({ params }: Props) {
                       <span className="font-semibold text-[var(--text)]">
                         {offer.label}
                         {offer.isCheapest ? " · الأرخص" : ""}
+                        {offer.live ? " · حي" : ""}
                       </span>
                       <span className="font-bold text-[var(--lime)]">
                         {formatSar(offer.price)}

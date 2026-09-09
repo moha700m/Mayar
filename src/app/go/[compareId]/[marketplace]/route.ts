@@ -1,24 +1,23 @@
 import { NextResponse } from "next/server";
-import { getCompareGroup } from "@/data/comparisons";
+import { getLiveCompareById } from "@/lib/compare-live";
 
 type Params = {
   params: Promise<{ compareId: string; marketplace: string }>;
 };
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(request: Request, { params }: Params) {
   const { compareId, marketplace } = await params;
-  const group = getCompareGroup(compareId);
-  if (!group) {
-    return NextResponse.redirect(new URL("/", _request.url));
+  const { result } = await getLiveCompareById(compareId);
+  if (!result) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  const offer = group.rankedOffers.find(
+  const offer = result.rankedOffers.find(
     (item) => item.marketplace === marketplace,
   );
   if (!offer) {
-    return NextResponse.redirect(new URL(`/compare/${compareId}`, _request.url));
+    return NextResponse.redirect(new URL(`/compare/${compareId}`, request.url));
   }
 
-  // Redirect to the matched product listing on that marketplace.
   return NextResponse.redirect(offer.productUrl, 307);
 }
