@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { findComparisonForProduct } from "@/data/comparisons";
 import {
   discountPercent,
   externalBuyUrl,
@@ -30,7 +31,14 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const discount = discountPercent(product);
-  const buyUrl = externalBuyUrl(product);
+  const comparison = findComparisonForProduct(product);
+  const matchedOffer = comparison?.rankedOffers.find(
+    (offer) => offer.marketplace === product.marketplace,
+  );
+  const buyUrl =
+    comparison && matchedOffer
+      ? `/go/${comparison.id}/${matchedOffer.marketplace}`
+      : externalBuyUrl(product);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-12">
@@ -95,8 +103,48 @@ export default async function ProductPage({ params }: Props) {
             rel="noopener noreferrer"
             className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[var(--ember)] px-6 py-4 text-base font-bold text-white shadow-[0_10px_40px_var(--glow)] transition hover:bg-[var(--ember-soft)] sm:w-auto"
           >
-            اشترِ الآن من {marketplaceLabels[product.marketplace]}
+            اشترِ نفس المنتج من {marketplaceLabels[product.marketplace]}
           </a>
+
+          {comparison ? (
+            <div className="mt-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="font-bold text-[var(--text)]">
+                  قارن نفس المنتج في كل المواقع
+                </p>
+                <Link
+                  href={`/compare/${comparison.id}`}
+                  className="text-sm font-semibold text-[var(--ember-soft)]"
+                >
+                  التفاصيل
+                </Link>
+              </div>
+              <p className="mb-3 text-sm text-[var(--lime)]">
+                الأرخص: {comparison.cheapest.label} —{" "}
+                {formatSar(comparison.cheapest.price)}
+              </p>
+              <ul className="space-y-2">
+                {comparison.rankedOffers.slice(0, 4).map((offer) => (
+                  <li key={offer.marketplace}>
+                    <a
+                      href={`/go/${comparison.id}/${offer.marketplace}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between rounded-xl border border-[var(--line)] px-3 py-2 text-sm transition hover:border-[rgba(255,90,60,0.45)]"
+                    >
+                      <span className="font-semibold text-[var(--text)]">
+                        {offer.label}
+                        {offer.isCheapest ? " · الأرخص" : ""}
+                      </span>
+                      <span className="font-bold text-[var(--lime)]">
+                        {formatSar(offer.price)}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
     </main>

@@ -88,16 +88,14 @@ export const marketplaceLabels: Record<Exclude<MarketplaceId, "all">, string> =
 
 /** What shoppers in Saudi Arabia are searching right now. */
 export const trendingSearches: TrendingSearch[] = [
-  { id: "ts1", label: "آيفون 16", query: "آيفون", heat: 98 },
-  { id: "ts2", label: "مكيف صحراوي", query: "مكيف", heat: 91 },
-  { id: "ts3", label: "ساعة ذكية", query: "ساعة", heat: 88 },
-  { id: "ts4", label: "سماعات لاسلكية", query: "سماعات", heat: 84 },
-  { id: "ts5", label: "عطور رجالية", query: "عطر", heat: 79 },
-  { id: "ts6", label: "مكنسة روبوت", query: "مكنسة", heat: 76 },
-  { id: "ts7", label: "ألعاب أطفال", query: "أطفال", heat: 72 },
-  { id: "ts8", label: "قهوة مختصة", query: "قهوة", heat: 68 },
-  { id: "ts9", label: "شاشات تلفاز", query: "تلفاز", heat: 65 },
-  { id: "ts10", label: "حقائب سفر", query: "حقيبة", heat: 61 },
+  { id: "ts1", label: "سماعات لاسلكية", query: "سماعات", heat: 98 },
+  { id: "ts2", label: "ساعة ذكية", query: "ساعة", heat: 94 },
+  { id: "ts3", label: "مكنسة روبوت", query: "مكنسة", heat: 90 },
+  { id: "ts4", label: "باور بانك", query: "باور", heat: 86 },
+  { id: "ts5", label: "عطور رجالية", query: "عطر", heat: 82 },
+  { id: "ts6", label: "تلفاز 55", query: "تلفاز", heat: 78 },
+  { id: "ts7", label: "مكيف صحراوي", query: "مكيف", heat: 75 },
+  { id: "ts8", label: "حقائب سفر", query: "حقيبة", heat: 71 },
 ];
 
 /** Marketplace buy destination — opens the product/offer on that platform. */
