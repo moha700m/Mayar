@@ -5,27 +5,44 @@ export type CategoryId =
   | "beauty"
   | "fashion"
   | "sports"
-  | "auto";
+  | "auto"
+  | "arts";
+
+export type MarketplaceId =
+  | "all"
+  | "alibaba"
+  | "aliexpress"
+  | "amazon"
+  | "funoon";
 
 export type Product = {
   id: string;
   title: string;
   titleAr: string;
   category: Exclude<CategoryId, "all">;
+  marketplace: Exclude<MarketplaceId, "all">;
+  /** Price in Saudi Riyal */
   price: number;
+  /** Original price in Saudi Riyal */
   originalPrice: number;
-  currency: "USD";
+  currency: "SAR";
   rating: number;
   orders: number;
   image: string;
   imageAlt: string;
   badge?: "ساخن" | "جديد" | "خصم قوي";
   searchQuery: string;
-  affiliateUrl?: string;
+  /** Direct marketplace product URL */
+  productUrl: string;
 };
 
 export type Category = {
   id: CategoryId;
+  label: string;
+};
+
+export type Marketplace = {
+  id: MarketplaceId;
   label: string;
 };
 
@@ -37,17 +54,69 @@ export const categories: Category[] = [
   { id: "fashion", label: "أزياء" },
   { id: "sports", label: "رياضة" },
   { id: "auto", label: "سيارات" },
+  { id: "arts", label: "فنون" },
 ];
 
-export const trendingProducts: Product[] = [
+export const marketplaces: Marketplace[] = [
+  { id: "all", label: "كل المنصات" },
+  { id: "alibaba", label: "علي بابا" },
+  { id: "aliexpress", label: "علي إكسبريس" },
+  { id: "amazon", label: "أمازون" },
+  { id: "funoon", label: "عروض فنون" },
+];
+
+export const marketplaceLabels: Record<Exclude<MarketplaceId, "all">, string> =
   {
-    id: "g1",
+    alibaba: "علي بابا",
+    aliexpress: "علي إكسبريس",
+    amazon: "أمازون",
+    funoon: "عروض فنون",
+  };
+
+/** Marketplace buy destination — opens the product/offer on that platform. */
+export function buildProductUrl(
+  marketplace: Exclude<MarketplaceId, "all">,
+  query: string,
+): string {
+  const q = encodeURIComponent(query.trim());
+  const slug = encodeURIComponent(query.trim().replace(/\s+/g, "-"));
+  switch (marketplace) {
+    case "amazon":
+      return `https://www.amazon.sa/s?k=${q}&s=exact-aware-popularity-rank`;
+    case "aliexpress":
+      return `https://www.aliexpress.com/w/wholesale-${slug}.html?SortType=total_tranpro_desc`;
+    case "alibaba":
+      return `https://www.alibaba.com/trade/search?fsb=y&IndexArea=product_en&SearchText=${q}`;
+    case "funoon":
+      return `https://www.alibaba.com/trade/search?fsb=y&IndexArea=product_en&SearchText=${q}`;
+    default:
+      return `https://www.alibaba.com/trade/search?SearchText=${q}`;
+  }
+}
+
+function p(
+  partial: Omit<Product, "currency" | "productUrl"> & {
+    productUrl?: string;
+  },
+): Product {
+  return {
+    ...partial,
+    currency: "SAR",
+    productUrl:
+      partial.productUrl ??
+      buildProductUrl(partial.marketplace, partial.searchQuery),
+  };
+}
+
+export const trendingProducts: Product[] = [
+  p({
+    id: "ae-g1",
     title: "Magnetic Wireless Power Bank 10000mAh",
     titleAr: "باور بانك لاسلكي مغناطيسي 10000 مللي أمبير",
     category: "gadgets",
-    price: 18.9,
-    originalPrice: 39.9,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 71,
+    originalPrice: 150,
     rating: 4.8,
     orders: 48200,
     image:
@@ -55,15 +124,15 @@ export const trendingProducts: Product[] = [
     imageAlt: "شاحن محمول لاسلكي",
     badge: "ساخن",
     searchQuery: "magnetic wireless power bank 10000mah",
-  },
-  {
-    id: "g2",
+  }),
+  p({
+    id: "am-g2",
     title: "Mini Portable Projector HD",
     titleAr: "بروجكتر محمول صغير بدقة عالية",
     category: "gadgets",
-    price: 42.5,
-    originalPrice: 89.0,
-    currency: "USD",
+    marketplace: "amazon",
+    price: 159,
+    originalPrice: 334,
     rating: 4.6,
     orders: 22140,
     image:
@@ -71,15 +140,15 @@ export const trendingProducts: Product[] = [
     imageAlt: "بروجكتر منزلي",
     badge: "خصم قوي",
     searchQuery: "mini portable projector hd",
-  },
-  {
-    id: "g3",
+  }),
+  p({
+    id: "ae-g3",
     title: "Noise Cancelling Earbuds",
     titleAr: "سماعات أذن بخاصية عزل الضوضاء",
     category: "gadgets",
-    price: 24.3,
-    originalPrice: 59.9,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 91,
+    originalPrice: 225,
     rating: 4.7,
     orders: 91300,
     image:
@@ -87,31 +156,31 @@ export const trendingProducts: Product[] = [
     imageAlt: "سماعات لاسلكية",
     badge: "ساخن",
     searchQuery: "noise cancelling earbuds wireless",
-  },
-  {
-    id: "g4",
-    title: "Smart Watch Ultra Sport",
-    titleAr: "ساعة ذكية رياضية الترا",
+  }),
+  p({
+    id: "ab-g4",
+    title: "Smart Watch Ultra Sport Bulk",
+    titleAr: "ساعة ذكية رياضية — طلب جملة",
     category: "gadgets",
-    price: 31.2,
-    originalPrice: 74.0,
-    currency: "USD",
+    marketplace: "alibaba",
+    price: 117,
+    originalPrice: 278,
     rating: 4.5,
     orders: 35680,
     image:
       "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=900&q=80",
     imageAlt: "ساعة ذكية",
     badge: "جديد",
-    searchQuery: "smart watch ultra sport",
-  },
-  {
-    id: "h1",
+    searchQuery: "smart watch ultra sport wholesale",
+  }),
+  p({
+    id: "ae-h1",
     title: "LED Strip Lights RGB App Control",
     titleAr: "شريط إضاءة LED RGB بالتحكم عبر التطبيق",
     category: "home",
-    price: 9.8,
-    originalPrice: 24.9,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 37,
+    originalPrice: 93,
     rating: 4.7,
     orders: 128400,
     image:
@@ -119,15 +188,15 @@ export const trendingProducts: Product[] = [
     imageAlt: "إضاءة LED ملونة",
     badge: "ساخن",
     searchQuery: "led strip lights rgb app control",
-  },
-  {
-    id: "h2",
+  }),
+  p({
+    id: "am-h2",
     title: "Robot Vacuum Compact",
     titleAr: "مكنسة روبوت مدمجة",
     category: "home",
-    price: 79.0,
-    originalPrice: 159.0,
-    currency: "USD",
+    marketplace: "amazon",
+    price: 296,
+    originalPrice: 596,
     rating: 4.4,
     orders: 18750,
     image:
@@ -135,46 +204,46 @@ export const trendingProducts: Product[] = [
     imageAlt: "مكنسة روبوت",
     badge: "خصم قوي",
     searchQuery: "robot vacuum cleaner compact",
-  },
-  {
-    id: "h3",
-    title: "Electric Milk Frother Whisk",
-    titleAr: "خفاقة حليب كهربائية",
+  }),
+  p({
+    id: "ab-h3",
+    title: "Electric Milk Frother Wholesale",
+    titleAr: "خفاقة حليب كهربائية — جملة",
     category: "home",
-    price: 6.4,
-    originalPrice: 14.9,
-    currency: "USD",
+    marketplace: "alibaba",
+    price: 24,
+    originalPrice: 56,
     rating: 4.6,
     orders: 64210,
     image:
       "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?auto=format&fit=crop&w=900&q=80",
     imageAlt: "خفاقة قهوة",
-    searchQuery: "electric milk frother handheld",
-  },
-  {
-    id: "h4",
-    title: "Folding Storage Organizer",
-    titleAr: "منظم تخزين قابل للطي",
-    category: "home",
-    price: 11.5,
-    originalPrice: 27.0,
-    currency: "USD",
+    searchQuery: "electric milk frother wholesale",
+  }),
+  p({
+    id: "fn-h4",
+    title: "Folding Storage Organizer Art Display",
+    titleAr: "منظم تخزين وعرض قطع فنية",
+    category: "arts",
+    marketplace: "funoon",
+    price: 43,
+    originalPrice: 101,
     rating: 4.5,
     orders: 40320,
     image:
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80",
     imageAlt: "منظم تخزين منزلي",
     badge: "جديد",
-    searchQuery: "folding storage organizer closet",
-  },
-  {
-    id: "b1",
+    searchQuery: "folding storage organizer display",
+  }),
+  p({
+    id: "am-b1",
     title: "LED Face Mask Therapy",
     titleAr: "قناع وجه علاجي بتقنية LED",
     category: "beauty",
-    price: 28.7,
-    originalPrice: 69.0,
-    currency: "USD",
+    marketplace: "amazon",
+    price: 108,
+    originalPrice: 259,
     rating: 4.3,
     orders: 15490,
     image:
@@ -182,15 +251,15 @@ export const trendingProducts: Product[] = [
     imageAlt: "عناية بالبشرة",
     badge: "ساخن",
     searchQuery: "led face mask light therapy",
-  },
-  {
-    id: "b2",
+  }),
+  p({
+    id: "ae-b2",
     title: "Hair Dryer Diffuser Ionic",
     titleAr: "مجفف شعر أيوني مع موزع",
     category: "beauty",
-    price: 22.1,
-    originalPrice: 49.9,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 83,
+    originalPrice: 187,
     rating: 4.6,
     orders: 27880,
     image:
@@ -198,30 +267,30 @@ export const trendingProducts: Product[] = [
     imageAlt: "مجفف شعر",
     badge: "خصم قوي",
     searchQuery: "ionic hair dryer diffuser",
-  },
-  {
-    id: "b3",
-    title: "Makeup Brush Set Soft",
-    titleAr: "طقم فرش مكياج ناعمة",
+  }),
+  p({
+    id: "fn-b3",
+    title: "Makeup Brush Set Soft Art Edition",
+    titleAr: "طقم فرش مكياج ناعمة — إصدار فني",
     category: "beauty",
-    price: 8.9,
-    originalPrice: 19.9,
-    currency: "USD",
+    marketplace: "funoon",
+    price: 33,
+    originalPrice: 75,
     rating: 4.8,
     orders: 76200,
     image:
       "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=900&q=80",
     imageAlt: "فرش مكياج",
     searchQuery: "makeup brush set professional soft",
-  },
-  {
-    id: "f1",
+  }),
+  p({
+    id: "ae-f1",
     title: "Oversized Vintage Sunglasses",
     titleAr: "نظارات شمسية كلاسيكية كبيرة",
     category: "fashion",
-    price: 7.2,
-    originalPrice: 18.5,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 27,
+    originalPrice: 69,
     rating: 4.5,
     orders: 53410,
     image:
@@ -229,15 +298,15 @@ export const trendingProducts: Product[] = [
     imageAlt: "نظارات شمسية",
     badge: "ساخن",
     searchQuery: "oversized vintage sunglasses women",
-  },
-  {
-    id: "f2",
+  }),
+  p({
+    id: "am-f2",
     title: "Crossbody Mini Bag",
     titleAr: "حقيبة كروس صغيرة",
     category: "fashion",
-    price: 13.4,
-    originalPrice: 29.9,
-    currency: "USD",
+    marketplace: "amazon",
+    price: 50,
+    originalPrice: 112,
     rating: 4.4,
     orders: 31900,
     image:
@@ -245,30 +314,30 @@ export const trendingProducts: Product[] = [
     imageAlt: "حقيبة يد",
     badge: "جديد",
     searchQuery: "crossbody mini bag women",
-  },
-  {
-    id: "f3",
-    title: "Thermal Running Jacket",
-    titleAr: "جاكيت جري حراري",
+  }),
+  p({
+    id: "ab-f3",
+    title: "Thermal Running Jacket Wholesale",
+    titleAr: "جاكيت جري حراري — جملة",
     category: "fashion",
-    price: 26.8,
-    originalPrice: 55.0,
-    currency: "USD",
+    marketplace: "alibaba",
+    price: 101,
+    originalPrice: 206,
     rating: 4.6,
     orders: 19870,
     image:
       "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80",
     imageAlt: "جاكيت رياضي",
-    searchQuery: "thermal running jacket men",
-  },
-  {
-    id: "s1",
+    searchQuery: "thermal running jacket wholesale",
+  }),
+  p({
+    id: "ae-s1",
     title: "Resistance Bands Set",
     titleAr: "طقم أحزمة مقاومة للتمارين",
     category: "sports",
-    price: 10.5,
-    originalPrice: 24.0,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 39,
+    originalPrice: 90,
     rating: 4.7,
     orders: 88450,
     image:
@@ -276,46 +345,46 @@ export const trendingProducts: Product[] = [
     imageAlt: "أحزمة مقاومة",
     badge: "ساخن",
     searchQuery: "resistance bands set workout",
-  },
-  {
-    id: "s2",
+  }),
+  p({
+    id: "am-s2",
     title: "Yoga Mat Non Slip",
     titleAr: "سجادة يوغا مانعة للانزلاق",
     category: "sports",
-    price: 14.9,
-    originalPrice: 32.0,
-    currency: "USD",
+    marketplace: "amazon",
+    price: 56,
+    originalPrice: 120,
     rating: 4.6,
     orders: 45120,
     image:
       "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=900&q=80",
     imageAlt: "سجادة يوغا",
     searchQuery: "yoga mat non slip thick",
-  },
-  {
-    id: "s3",
-    title: "Adjustable Dumbbell Pair",
-    titleAr: "دامبل قابل للتعديل",
+  }),
+  p({
+    id: "ab-s3",
+    title: "Adjustable Dumbbell Pair Wholesale",
+    titleAr: "دامبل قابل للتعديل — جملة",
     category: "sports",
-    price: 36.0,
-    originalPrice: 79.0,
-    currency: "USD",
+    marketplace: "alibaba",
+    price: 135,
+    originalPrice: 296,
     rating: 4.5,
     orders: 14230,
     image:
       "https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&w=900&q=80",
     imageAlt: "أوزان رياضية",
     badge: "خصم قوي",
-    searchQuery: "adjustable dumbbell pair home gym",
-  },
-  {
-    id: "a1",
+    searchQuery: "adjustable dumbbell pair wholesale",
+  }),
+  p({
+    id: "ae-a1",
     title: "Car Phone Holder Magnetic",
     titleAr: "حامل جوال مغناطيسي للسيارة",
     category: "auto",
-    price: 5.9,
-    originalPrice: 14.9,
-    currency: "USD",
+    marketplace: "aliexpress",
+    price: 22,
+    originalPrice: 56,
     rating: 4.6,
     orders: 112800,
     image:
@@ -323,15 +392,15 @@ export const trendingProducts: Product[] = [
     imageAlt: "حامل هاتف سيارة",
     badge: "ساخن",
     searchQuery: "car phone holder magnetic mount",
-  },
-  {
-    id: "a2",
+  }),
+  p({
+    id: "am-a2",
     title: "Dash Cam Dual Lens",
     titleAr: "كاميرا سيارة بعدستين",
     category: "auto",
-    price: 34.5,
-    originalPrice: 79.0,
-    currency: "USD",
+    marketplace: "amazon",
+    price: 129,
+    originalPrice: 296,
     rating: 4.4,
     orders: 26740,
     image:
@@ -339,31 +408,62 @@ export const trendingProducts: Product[] = [
     imageAlt: "كاميرا لوحة القيادة",
     badge: "جديد",
     searchQuery: "dash cam dual lens 1080p",
-  },
-  {
-    id: "a3",
-    title: "Portable Car Vacuum",
-    titleAr: "مكنسة سيارة محمولة",
+  }),
+  p({
+    id: "fn-art1",
+    title: "Abstract Wall Art Canvas Set",
+    titleAr: "طقم لوحات حائط فنية مجردة",
+    category: "arts",
+    marketplace: "funoon",
+    price: 89,
+    originalPrice: 189,
+    rating: 4.7,
+    orders: 22100,
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "لوحات فنية",
+    badge: "ساخن",
+    searchQuery: "abstract wall art canvas set",
+  }),
+  p({
+    id: "fn-art2",
+    title: "Handmade Ceramic Vase Decor",
+    titleAr: "مزهرية خزف يدوية للديكور",
+    category: "arts",
+    marketplace: "funoon",
+    price: 64,
+    originalPrice: 140,
+    rating: 4.6,
+    orders: 9800,
+    image:
+      "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "مزهرية ديكور",
+    badge: "جديد",
+    searchQuery: "handmade ceramic vase decor",
+  }),
+  p({
+    id: "ab-a3",
+    title: "Portable Car Vacuum Wholesale",
+    titleAr: "مكنسة سيارة محمولة — جملة",
     category: "auto",
-    price: 16.8,
-    originalPrice: 35.0,
-    currency: "USD",
+    marketplace: "alibaba",
+    price: 63,
+    originalPrice: 131,
     rating: 4.5,
     orders: 38960,
     image:
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=80",
     imageAlt: "مكنسة سيارة",
-    searchQuery: "portable car vacuum cleaner wireless",
-  },
+    searchQuery: "portable car vacuum cleaner wholesale",
+  }),
 ];
 
-export function aliexpressSearchUrl(query: string): string {
-  const slug = encodeURIComponent(query.trim().replace(/\s+/g, "-"));
-  return `https://www.aliexpress.com/w/wholesale-${slug}.html`;
+export function productHref(product: Product): string {
+  return `/product/${product.id}`;
 }
 
-export function productUrl(product: Product): string {
-  return product.affiliateUrl ?? aliexpressSearchUrl(product.searchQuery);
+export function externalBuyUrl(product: Product): string {
+  return product.productUrl;
 }
 
 export function discountPercent(product: Product): number {
@@ -380,10 +480,25 @@ export function formatOrders(orders: number): string {
   return String(orders);
 }
 
-export function getProducts(category: CategoryId = "all"): Product[] {
-  const list =
-    category === "all"
-      ? trendingProducts
-      : trendingProducts.filter((p) => p.category === category);
+export function formatSar(amount: number): string {
+  return `${amount.toLocaleString("ar-SA")} ر.س`;
+}
+
+export function getProductById(id: string): Product | undefined {
+  return trendingProducts.find((product) => product.id === id);
+}
+
+export function getProducts(options?: {
+  category?: CategoryId;
+  marketplace?: MarketplaceId;
+}): Product[] {
+  const category = options?.category ?? "all";
+  const marketplace = options?.marketplace ?? "all";
+  const list = trendingProducts.filter((product) => {
+    const categoryOk = category === "all" || product.category === category;
+    const marketOk =
+      marketplace === "all" || product.marketplace === marketplace;
+    return categoryOk && marketOk;
+  });
   return [...list].sort((a, b) => b.orders - a.orders);
 }

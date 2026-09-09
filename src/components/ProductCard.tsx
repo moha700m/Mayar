@@ -1,8 +1,11 @@
 import Image from "next/image";
+import Link from "next/link";
 import {
   discountPercent,
   formatOrders,
-  productUrl,
+  formatSar,
+  marketplaceLabels,
+  productHref,
   type Product,
 } from "@/data/products";
 
@@ -13,13 +16,11 @@ type Props = {
 
 export function ProductCard({ product, index }: Props) {
   const discount = discountPercent(product);
-  const href = productUrl(product);
+  const href = productHref(product);
 
   return (
-    <a
+    <Link
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       className="product-enter group block overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(255,90,60,0.45)] hover:shadow-[0_18px_50px_rgba(0,0,0,0.35)]"
       style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}
     >
@@ -31,8 +32,11 @@ export function ProductCard({ product, index }: Props) {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-cover transition duration-500 group-hover:scale-105"
         />
+        <span className="absolute end-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">
+          {marketplaceLabels[product.marketplace]}
+        </span>
         {product.badge ? (
-          <span className="absolute end-3 top-3 rounded-full bg-[var(--ember)] px-2.5 py-1 text-xs font-bold text-white">
+          <span className="absolute start-3 bottom-3 rounded-full bg-[var(--ember)] px-2.5 py-1 text-xs font-bold text-white">
             {product.badge}
           </span>
         ) : null}
@@ -54,11 +58,11 @@ export function ProductCard({ product, index }: Props) {
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-xl font-extrabold text-[var(--lime)]">
-              ${product.price.toFixed(2)}
+              {formatSar(product.price)}
             </p>
             {product.originalPrice > product.price ? (
               <p className="text-sm text-[var(--muted)] line-through">
-                ${product.originalPrice.toFixed(2)}
+                {formatSar(product.originalPrice)}
               </p>
             ) : null}
           </div>
@@ -69,10 +73,10 @@ export function ProductCard({ product, index }: Props) {
         </div>
 
         <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--ember-soft)] transition group-hover:gap-2">
-          افتح على علي إكسبريس
+          دخول المنتج
           <span aria-hidden>←</span>
         </span>
       </div>
-    </a>
+    </Link>
   );
 }

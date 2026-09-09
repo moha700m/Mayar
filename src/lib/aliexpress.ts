@@ -1,10 +1,14 @@
 import { createHash } from "node:crypto";
 import {
+  buildProductUrl,
   getProducts,
   type CategoryId,
+  type MarketplaceId,
   type Product,
   trendingProducts,
 } from "@/data/products";
+
+const USD_TO_SAR = 3.75;
 
 type AffiliateProduct = {
   product_id?: string | number;
@@ -38,28 +42,39 @@ function mapCategory(name?: string): Exclude<CategoryId, "all"> {
   if (/(apparel|fashion|shoe|bag|cloth)/.test(value)) return "fashion";
   if (/(sport|outdoor|fitness)/.test(value)) return "sports";
   if (/(auto|car|vehicle|motor)/.test(value)) return "auto";
+  if (/(art|craft|decor)/.test(value)) return "arts";
   if (/(home|garden|kitchen|house)/.test(value)) return "home";
   return "gadgets";
+}
+
+function toSar(usd: number): number {
+  return Math.round(usd * USD_TO_SAR);
 }
 
 function toProduct(item: AffiliateProduct, index: number): Product | null {
   const title = item.product_title?.trim();
   const image = item.product_main_image_url?.trim();
-  const price = Number(item.target_sale_price);
-  if (!title || !image || !Number.isFinite(price)) return null;
+  const priceUsd = Number(item.target_sale_price);
+  if (!title || !image || !Number.isFinite(priceUsd)) return null;
 
-  const original = Number(item.target_original_price);
+  const originalUsd = Number(item.target_original_price);
   const ratingRaw = Number(item.evaluate_rate);
   const orders = Number(item.volume);
+  const price = toSar(priceUsd);
+  const originalPrice =
+    Number.isFinite(originalUsd) && originalUsd > priceUsd
+      ? toSar(originalUsd)
+      : price;
 
   return {
     id: String(item.product_id ?? `ae-${index}`),
     title,
     titleAr: title,
     category: mapCategory(item.first_level_category_name),
+    marketplace: "aliexpress",
     price,
-    originalPrice: Number.isFinite(original) && original > price ? original : price,
-    currency: "USD",
+    originalPrice,
+    currency: "SAR",
     rating: Number.isFinite(ratingRaw)
       ? ratingRaw > 5
         ? ratingRaw / 20
@@ -70,19 +85,33 @@ function toProduct(item: AffiliateProduct, index: number): Product | null {
     imageAlt: title,
     badge: index < 4 ? "ساخن" : undefined,
     searchQuery: title,
-    affiliateUrl: item.promotion_link,
+    productUrl:
+      item.promotion_link?.trim() ||
+      buildProductUrl("aliexpress", title),
   };
 }
 
-export async function fetchTrendingProducts(
-  category: CategoryId = "all",
-): Promise<{ products: Product[]; source: "live" | "curated" }> {
+export async function fetchTrendingProducts(options?: {
+  category?: CategoryId;
+  marketplace?: MarketplaceId;
+}): Promise<{ products: Product[]; source: "live" | "curated" }> {
+  const category = options?.category ?? "all";
+  const marketplace = options?.marketplace ?? "all";
+
   const appKey = process.env.ALIEXPRESS_APP_KEY?.trim();
   const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   const trackingId = process.env.ALIEXPRESS_TRACKING_ID?.trim();
 
-  if (!appKey || !appSecret || !trackingId) {
-    return { products: getProducts(category), source: "curated" };
+  if (
+    !appKey ||
+    !appSecret ||
+    !trackingId ||
+    (marketplace !== "all" && marketplace !== "aliexpress")
+  ) {
+    return {
+      products: getProducts({ category, marketplace }),
+      source: "curated",
+    };
   }
 
   try {
@@ -139,7 +168,10 @@ export async function fetchTrendingProducts(
       .filter((item): item is Product => Boolean(item));
 
     if (mapped.length === 0) {
-      return { products: getProducts(category), source: "curated" };
+      return {
+        products: getProducts({ category, marketplace }),
+        source: "curated",
+      };
     }
 
     const filtered =
@@ -147,12 +179,25 @@ export async function fetchTrendingProducts(
         ? mapped
         : mapped.filter((product) => product.category === category);
 
+    const merged =
+      marketplace === "aliexpress" || marketplace === "all"
+        ? [
+            ...filtered,
+            ...getProducts({ category, marketplace }).filter(
+              (item) => item.marketplace !== "aliexpress",
+            ),
+          ]
+        : getProducts({ category, marketplace });
+
     return {
-      products: filtered.length > 0 ? filtered : mapped,
+      products: merged.length > 0 ? merged : mapped,
       source: "live",
     };
   } catch {
-    return { products: getProducts(category), source: "curated" };
+    return {
+      products: getProducts({ category, marketplace }),
+      source: "curated",
+    };
   }
 }
 
