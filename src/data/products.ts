@@ -51,7 +51,7 @@ export const trendingProducts: Product[] = [
     rating: 4.8,
     orders: 48200,
     image:
-      "https://images.unsplash.com/photo-1609091839311-b65b6aba5e06?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=900&q=80",
     imageAlt: "شاحن محمول لاسلكي",
     badge: "ساخن",
     searchQuery: "magnetic wireless power bank 10000mah",
@@ -225,7 +225,7 @@ export const trendingProducts: Product[] = [
     rating: 4.5,
     orders: 53410,
     image:
-      "https://images.unsplash.com/photo-1511499767150-a48a237ac008?auto=format&fit=crop&w=900&q=80",
+      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=900&q=80",
     imageAlt: "نظارات شمسية",
     badge: "ساخن",
     searchQuery: "oversized vintage sunglasses women",
