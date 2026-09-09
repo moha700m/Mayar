@@ -19,7 +19,7 @@ export function SiteHeader() {
           </span>
         </Link>
         <p className="hidden text-sm text-[var(--muted)] sm:block">
-          علي بابا · أسعار بالريال
+          نون · عروض السعودية · بالريال
         </p>
       </div>
     </header>

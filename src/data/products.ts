@@ -13,7 +13,16 @@ export type MarketplaceId =
   | "alibaba"
   | "aliexpress"
   | "amazon"
+  | "noon"
+  | "saudi"
   | "funoon";
+
+export type TrendingSearch = {
+  id: string;
+  label: string;
+  query: string;
+  heat: number;
+};
 
 export type Product = {
   id: string;
@@ -59,9 +68,11 @@ export const categories: Category[] = [
 
 export const marketplaces: Marketplace[] = [
   { id: "all", label: "كل المنصات" },
-  { id: "alibaba", label: "علي بابا" },
-  { id: "aliexpress", label: "علي إكسبريس" },
+  { id: "saudi", label: "عروض السعودية" },
+  { id: "noon", label: "نون" },
   { id: "amazon", label: "أمازون" },
+  { id: "aliexpress", label: "علي إكسبريس" },
+  { id: "alibaba", label: "علي بابا" },
   { id: "funoon", label: "عروض فنون" },
 ];
 
@@ -70,8 +81,24 @@ export const marketplaceLabels: Record<Exclude<MarketplaceId, "all">, string> =
     alibaba: "علي بابا",
     aliexpress: "علي إكسبريس",
     amazon: "أمازون",
+    noon: "نون",
+    saudi: "عروض السعودية",
     funoon: "عروض فنون",
   };
+
+/** What shoppers in Saudi Arabia are searching right now. */
+export const trendingSearches: TrendingSearch[] = [
+  { id: "ts1", label: "آيفون 16", query: "آيفون", heat: 98 },
+  { id: "ts2", label: "مكيف صحراوي", query: "مكيف", heat: 91 },
+  { id: "ts3", label: "ساعة ذكية", query: "ساعة", heat: 88 },
+  { id: "ts4", label: "سماعات لاسلكية", query: "سماعات", heat: 84 },
+  { id: "ts5", label: "عطور رجالية", query: "عطر", heat: 79 },
+  { id: "ts6", label: "مكنسة روبوت", query: "مكنسة", heat: 76 },
+  { id: "ts7", label: "ألعاب أطفال", query: "أطفال", heat: 72 },
+  { id: "ts8", label: "قهوة مختصة", query: "قهوة", heat: 68 },
+  { id: "ts9", label: "شاشات تلفاز", query: "تلفاز", heat: 65 },
+  { id: "ts10", label: "حقائب سفر", query: "حقيبة", heat: 61 },
+];
 
 /** Marketplace buy destination — opens the product/offer on that platform. */
 export function buildProductUrl(
@@ -83,6 +110,10 @@ export function buildProductUrl(
   switch (marketplace) {
     case "amazon":
       return `https://www.amazon.sa/s?k=${q}&s=exact-aware-popularity-rank`;
+    case "noon":
+      return `https://www.noon.com/saudi-ar/search?q=${q}`;
+    case "saudi":
+      return `https://www.noon.com/saudi-ar/search?q=${q}&f[deal_flag]=1`;
     case "aliexpress":
       return `https://www.aliexpress.com/w/wholesale-${slug}.html?SortType=total_tranpro_desc`;
     case "alibaba":
@@ -90,7 +121,7 @@ export function buildProductUrl(
     case "funoon":
       return `https://www.alibaba.com/trade/search?fsb=y&IndexArea=product_en&SearchText=${q}`;
     default:
-      return `https://www.alibaba.com/trade/search?SearchText=${q}`;
+      return `https://www.noon.com/saudi-ar/search?q=${q}`;
   }
 }
 
@@ -455,6 +486,118 @@ export const trendingProducts: Product[] = [
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=80",
     imageAlt: "مكنسة سيارة",
     searchQuery: "portable car vacuum cleaner wholesale",
+  }),
+  p({
+    id: "nn-g1",
+    title: "iPhone Case MagSafe Clear",
+    titleAr: "كفر آيفون شفاف MagSafe",
+    category: "gadgets",
+    marketplace: "noon",
+    price: 49,
+    originalPrice: 89,
+    rating: 4.6,
+    orders: 51200,
+    image:
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "كفر جوال",
+    badge: "ساخن",
+    searchQuery: "iphone magsafe case",
+  }),
+  p({
+    id: "nn-h1",
+    title: "Desert Air Cooler Compact",
+    titleAr: "مكيف صحراوي مدمج",
+    category: "home",
+    marketplace: "noon",
+    price: 289,
+    originalPrice: 459,
+    rating: 4.4,
+    orders: 18400,
+    image:
+      "https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "مكيف منزلي",
+    badge: "خصم قوي",
+    searchQuery: "desert air cooler",
+  }),
+  p({
+    id: "nn-b1",
+    title: "Men Perfume Gift Set",
+    titleAr: "طقم عطور رجالية",
+    category: "beauty",
+    marketplace: "noon",
+    price: 119,
+    originalPrice: 199,
+    rating: 4.7,
+    orders: 27600,
+    image:
+      "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "عطر رجالي",
+    badge: "جديد",
+    searchQuery: "men perfume gift set",
+  }),
+  p({
+    id: "sa-g1",
+    title: "Samsung Galaxy Buds Deal",
+    titleAr: "سماعات سامسونج — عرض سعودي",
+    category: "gadgets",
+    marketplace: "saudi",
+    price: 299,
+    originalPrice: 499,
+    rating: 4.8,
+    orders: 42100,
+    image:
+      "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "سماعات لاسلكية",
+    badge: "خصم قوي",
+    searchQuery: "samsung galaxy buds",
+  }),
+  p({
+    id: "sa-h1",
+    title: "55 Inch Smart TV Offer",
+    titleAr: "تلفاز ذكي 55 بوصة — عرض اليوم",
+    category: "home",
+    marketplace: "saudi",
+    price: 1299,
+    originalPrice: 1899,
+    rating: 4.5,
+    orders: 9800,
+    image:
+      "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "تلفاز ذكي",
+    badge: "ساخن",
+    searchQuery: "55 inch smart tv",
+  }),
+  p({
+    id: "sa-f1",
+    title: "Travel Luggage Set Saudi Deal",
+    titleAr: "طقم حقائب سفر — عرض السوق",
+    category: "fashion",
+    marketplace: "saudi",
+    price: 349,
+    originalPrice: 599,
+    rating: 4.6,
+    orders: 15300,
+    image:
+      "https://images.unsplash.com/photo-1565026057447-bc90a3dceb87?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "حقائب سفر",
+    badge: "خصم قوي",
+    searchQuery: "travel luggage set",
+  }),
+  p({
+    id: "nn-s1",
+    title: "Kids Outdoor Play Tent",
+    titleAr: "خيمة ألعاب خارجية للأطفال",
+    category: "sports",
+    marketplace: "noon",
+    price: 79,
+    originalPrice: 149,
+    rating: 4.5,
+    orders: 22100,
+    image:
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80",
+    imageAlt: "ألعاب أطفال",
+    badge: "ساخن",
+    searchQuery: "kids outdoor play tent",
   }),
 ];
 
